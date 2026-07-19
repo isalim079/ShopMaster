@@ -14,7 +14,7 @@ import { HTTP_STATUS } from '../../core/constants/http-status';
 import { toUserResponse } from './auth.mapper';
 
 import * as repository from './auth.repository';
-import { generateAccessToken, generateRefreshToken, hashToken, verifyRefreshToken } from '../../core/security/jwt';
+import { generateAccessToken, generatePasswordResetToken, generateRefreshToken, hashToken, verifyRefreshToken } from '../../core/security/jwt';
 import { JwtPayload, LoginResponse } from './auth.types';
 import { UserStatus } from '@prisma/client';
 
@@ -311,5 +311,65 @@ export const forgotPassword = async (
   return {
     message:
       'If the account exists, a password reset code has been sent.',
+  };
+};
+
+export const verifyResetOtp = async (
+  email: string,
+  otp: string,
+) => {
+  const user = await repository.findUserByEmail(email);
+
+  if (!user) {
+    throw new AppError(
+      'Invalid email or OTP.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  const passwordReset =
+    await repository.getLatestPasswordReset(
+      user.id,
+    );
+
+  if (!passwordReset) {
+    throw new AppError(
+      'Invalid email or OTP.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  if (passwordReset.expiresAt < new Date()) {
+    throw new AppError(
+      'OTP has expired.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  if (
+    !compareOtp(
+      otp,
+      passwordReset.otpHash,
+    )
+  ) {
+    throw new AppError(
+      'Invalid email or OTP.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  const resetToken =
+    generatePasswordResetToken({
+      userId: user.id,
+      email: user.email,
+      type: 'password-reset',
+    });
+
+  await repository.markPasswordResetUsed(
+    passwordReset.id,
+  );
+
+  return {
+    resetToken,
   };
 };

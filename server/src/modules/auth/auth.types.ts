@@ -36,3 +36,9 @@ export interface RefreshTokenPayload {
   userId: string;
   refreshToken: string;
 }
+
+export interface PasswordResetTokenPayload {
+  userId: string;
+  email: string;
+  type: 'password-reset';
+}

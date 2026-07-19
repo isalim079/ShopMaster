@@ -1,7 +1,7 @@
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
 
-import { JwtPayload } from '../../modules/auth/auth.types';
+import { JwtPayload, PasswordResetTokenPayload } from '../../modules/auth/auth.types';
 import { env } from '../config/env';
 import crypto from 'crypto';
 
@@ -46,4 +46,33 @@ export const verifyRefreshToken = (
 
 export const hashToken = (token: string): string => {
   return crypto.createHash('sha256').update(token).digest('hex');
+};
+
+const passwordResetSecret =
+  process.env.JWT_PASSWORD_RESET_SECRET as string;
+
+const passwordResetExpiresIn = (process.env
+  .JWT_PASSWORD_RESET_EXPIRES_IN ?? '10m') as StringValue;
+
+const passwordResetSignOptions: SignOptions = {
+  expiresIn: passwordResetExpiresIn,
+};
+
+export const generatePasswordResetToken = (
+  payload: PasswordResetTokenPayload,
+): string => {
+  return jwt.sign(
+    payload,
+    passwordResetSecret,
+    passwordResetSignOptions,
+  );
+};
+
+export const verifyPasswordResetToken = (
+  token: string,
+): PasswordResetTokenPayload => {
+  return jwt.verify(
+    token,
+    passwordResetSecret,
+  ) as PasswordResetTokenPayload;
 };

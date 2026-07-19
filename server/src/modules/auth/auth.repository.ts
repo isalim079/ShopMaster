@@ -155,3 +155,28 @@ export const createPasswordReset = (
     },
   });
 };
+
+export const getLatestPasswordReset = (
+  userId: string,
+) => {
+  return prisma.passwordReset.findFirst({
+    where: {
+      userId,
+      usedAt: null,
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+};
+
+export const markPasswordResetUsed = (
+  id: string,
+) => {
+  return prisma.passwordReset.update({
+    where: { id },
+    data: {
+      usedAt: new Date(),
+    },
+  });
+};

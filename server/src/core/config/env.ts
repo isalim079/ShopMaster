@@ -19,4 +19,6 @@ export const env = {
   LOG_LEVEL: process.env.LOG_LEVEL,
   SERVER_URL: process.env.SERVER_URL,
   BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS),
+  JWT_PASSWORD_RESET_SECRET: process.env.JWT_PASSWORD_RESET_SECRET,
+  JWT_PASSWORD_RESET_EXPIRES_IN: process.env.JWT_PASSWORD_RESET_EXPIRES_IN,
 } as const

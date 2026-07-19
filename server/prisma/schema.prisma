@@ -4,12 +4,81 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
-model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum UserStatus {
+  PENDING
+  ACTIVE
+  BLOCKED
+}
+
+model User {
+  id                String             @id @default(cuid())
+  firstName         String
+  lastName          String?
+  email             String             @unique
+  phone             String?            @unique
+  password          String
+
+  role              UserRole           @default(EMPLOYEE)
+  status            UserStatus         @default(PENDING)
+  isEmailVerified   Boolean            @default(false)
+
+  emailVerifications EmailVerification[]
+  passwordResets     PasswordReset[]
+  refreshTokens      RefreshToken[]
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@index([email])
+}
+
+model EmailVerification {
+  id         String   @id @default(cuid())
+  userId     String
+  otp        String
+  expiresAt  DateTime
+  verifiedAt DateTime?
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id         String   @id @default(cuid())
+  userId     String
+  otp        String
+  expiresAt  DateTime
+  usedAt     DateTime?
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model RefreshToken {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
 }

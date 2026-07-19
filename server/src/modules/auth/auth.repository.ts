@@ -127,3 +127,31 @@ export const revokeRefreshToken = (
     },
   });
 };
+
+export const revokeAllUserTokens = (
+  userId: string,
+) => {
+  return prisma.refreshToken.updateMany({
+    where: {
+      userId,
+      revokedAt: null,
+    },
+    data: {
+      revokedAt: new Date(),
+    },
+  });
+};
+
+export const createPasswordReset = (
+  userId: string,
+  otpHash: string,
+  expiresAt: Date,
+) => {
+  return prisma.passwordReset.create({
+    data: {
+      userId,
+      otpHash,
+      expiresAt,
+    },
+  });
+};

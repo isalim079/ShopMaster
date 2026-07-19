@@ -242,3 +242,74 @@ export const refreshToken = async (
     refreshToken: newRefreshToken,
   };
 };
+
+export const logout = async (
+  refreshToken: string,
+) => {
+  const tokenHash = hashToken(refreshToken);
+
+  const storedToken =
+    await repository.findRefreshToken(tokenHash);
+
+  if (!storedToken) {
+    return {
+      message: 'Logged out successfully.',
+    };
+  }
+
+  if (!storedToken.revokedAt) {
+    await repository.revokeRefreshToken(tokenHash);
+  }
+
+  return {
+    message: 'Logged out successfully.',
+  };
+};
+
+export const forgotPassword = async (
+  email: string,
+) => {
+  const user = await repository.findUserByEmail(email);
+
+  /**
+   * Prevent email enumeration attacks.
+   * Always return the same response.
+   */
+  if (!user) {
+    return {
+      message:
+        'If the account exists, a password reset code has been sent.',
+    };
+  }
+
+  if (user.status !== UserStatus.ACTIVE) {
+    return {
+      message:
+        'If the account exists, a password reset code has been sent.',
+    };
+  }
+
+  const otp = generateOtp();
+
+  await repository.createPasswordReset(
+    user.id,
+    hashOtp(otp),
+    getOtpExpiry(),
+  );
+
+  await sendMail({
+    to: user.email,
+    subject: 'Password Reset Code',
+    html: `
+      <h2>Password Reset</h2>
+      <p>Your OTP is:</p>
+      <h1>${otp}</h1>
+      <p>This OTP expires in 10 minutes.</p>
+    `,
+  });
+
+  return {
+    message:
+      'If the account exists, a password reset code has been sent.',
+  };
+};

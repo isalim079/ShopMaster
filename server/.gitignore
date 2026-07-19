@@ -1,0 +1,68 @@
+# Dependencies
+node_modules/
+
+# Yarn (Berry)
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# Build
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Runtime / uploads
+tmp/
+temp/
+uploads/
+coverage/
+.nyc_output/
+
+# Prisma
+prisma/*.db
+prisma/*.db-journal
+prisma/dev.db*
+
+# Native / compiled
+*.node
+build/Release/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE / editors
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+*.swp
+*.swo
+*~
+
+# Test / cache
+.cache/
+.turbo/
+.eslintcache
+.prettiercache
+
+/src/generated/prisma

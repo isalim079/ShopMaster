@@ -35,6 +35,16 @@ export const updateUser = (
   });
 };
 
+export const updatePassword = (
+  userId: string,
+  password: string,
+) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: { password },
+  });
+};
+
 export const createEmailVerification = (
   userId: string,
   otpHash: string,
@@ -177,6 +187,17 @@ export const markPasswordResetUsed = (
     where: { id },
     data: {
       usedAt: new Date(),
+    },
+  });
+};
+
+export const deletePendingEmailVerifications = (
+  userId: string,
+) => {
+  return prisma.emailVerification.deleteMany({
+    where: {
+      userId,
+      verifiedAt: null,
     },
   });
 };

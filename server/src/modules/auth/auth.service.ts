@@ -14,7 +14,7 @@ import { HTTP_STATUS } from '../../core/constants/http-status';
 import { toUserResponse } from './auth.mapper';
 
 import * as repository from './auth.repository';
-import { generateAccessToken, generatePasswordResetToken, generateRefreshToken, hashToken, verifyRefreshToken } from '../../core/security/jwt';
+import { generateAccessToken, generatePasswordResetToken, generateRefreshToken, hashToken, verifyPasswordResetToken, verifyRefreshToken } from '../../core/security/jwt';
 import { JwtPayload, LoginResponse } from './auth.types';
 import { UserStatus } from '@prisma/client';
 
@@ -371,5 +371,112 @@ export const verifyResetOtp = async (
 
   return {
     resetToken,
+  };
+};
+
+export const resetPassword = async (
+  resetToken: string,
+  newPassword: string,
+) => {
+  const payload =
+    verifyPasswordResetToken(resetToken);
+
+  const user = await repository.findUserById(
+    payload.userId,
+  );
+
+  if (!user) {
+    throw new AppError(
+      'User not found.',
+      HTTP_STATUS.NOT_FOUND,
+    );
+  }
+
+  if (user.status !== UserStatus.ACTIVE) {
+    throw new AppError(
+      'Account is inactive.',
+      HTTP_STATUS.FORBIDDEN,
+    );
+  }
+
+  const isSamePassword =
+    await comparePassword(
+      newPassword,
+      user.password,
+    );
+
+  if (isSamePassword) {
+    throw new AppError(
+      'New password must be different from the current password.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  const hashedPassword =
+    await hashPassword(newPassword);
+
+  await repository.updatePassword(
+    user.id,
+    hashedPassword,
+  );
+
+  await repository.revokeAllUserTokens(
+    user.id,
+  );
+
+  return {
+    message:
+      'Password reset successfully. Please login again.',
+  };
+};
+
+export const resendVerificationOtp = async (
+  email: string,
+) => {
+  const user = await repository.findUserByEmail(email);
+
+  /**
+   * Prevent email enumeration attacks.
+   */
+  if (!user) {
+    return {
+      message:
+        'If the account exists, a verification code has been sent.',
+    };
+  }
+
+  if (user.isEmailVerified) {
+    throw new AppError(
+      'Email is already verified.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  await repository.deletePendingEmailVerifications(
+    user.id,
+  );
+
+  const otp = generateOtp();
+
+  await repository.createEmailVerification(
+    user.id,
+    hashOtp(otp),
+    getOtpExpiry(),
+  );
+
+  await sendMail({
+    to: user.email,
+    subject: 'Verify Your Email',
+    html: `
+      <h2>Email Verification</h2>
+      <p>Your verification code is:</p>
+      <h1>${otp}</h1>
+      <p>This code expires in 10 minutes.</p>
+    `,
+  });
+
+  return {
+    message:
+      'If the account exists, a verification code has been sent.',
   };
 };

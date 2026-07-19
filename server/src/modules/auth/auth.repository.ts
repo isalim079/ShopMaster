@@ -90,30 +90,38 @@ export const verifyEmail = (
 
 export const saveRefreshToken = (
   userId: string,
-  token: string,
+  tokenHash: string,
   expiresAt: Date,
 ) => {
   return prisma.refreshToken.create({
     data: {
       userId,
-      token,
+      tokenHash,
       expiresAt,
     },
   });
 };
 
-export const findRefreshToken = (token: string) => {
+export const findRefreshToken = (
+  tokenHash: string,
+) => {
   return prisma.refreshToken.findUnique({
-    where: { token },
+    where: {
+      tokenHash,
+    },
     include: {
       user: true,
     },
   });
 };
 
-export const revokeRefreshToken = (token: string) => {
+export const revokeRefreshToken = (
+  tokenHash: string,
+) => {
   return prisma.refreshToken.update({
-    where: { token },
+    where: {
+      tokenHash,
+    },
     data: {
       revokedAt: new Date(),
     },

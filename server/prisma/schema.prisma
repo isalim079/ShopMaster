@@ -73,7 +73,7 @@ model PasswordReset {
 model RefreshToken {
   id         String   @id @default(cuid())
   userId     String
-  token      String   @unique
+  tokenHash  String   @unique
   expiresAt  DateTime
   revokedAt  DateTime?
 

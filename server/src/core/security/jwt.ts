@@ -3,6 +3,7 @@ import type { StringValue } from 'ms';
 
 import { JwtPayload } from '../../modules/auth/auth.types';
 import { env } from '../config/env';
+import crypto from 'crypto';
 
 const accessSecret = env.JWT_ACCESS_SECRET as string;
 const refreshSecret = env.JWT_REFRESH_SECRET as string;
@@ -41,4 +42,8 @@ export const verifyRefreshToken = (
   token: string,
 ): JwtPayload => {
   return jwt.verify(token, refreshSecret) as JwtPayload;
+};
+
+export const hashToken = (token: string): string => {
+  return crypto.createHash('sha256').update(token).digest('hex');
 };

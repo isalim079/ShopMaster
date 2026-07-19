@@ -45,7 +45,7 @@ model User {
 model EmailVerification {
   id         String   @id @default(cuid())
   userId     String
-  otp        String
+  otpHash    String
   expiresAt  DateTime
   verifiedAt DateTime?
 
@@ -59,7 +59,7 @@ model EmailVerification {
 model PasswordReset {
   id         String   @id @default(cuid())
   userId     String
-  otp        String
+  otpHash    String
   expiresAt  DateTime
   usedAt     DateTime?
 

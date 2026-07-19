@@ -18,4 +18,5 @@ export const env = {
   REDIS_URL: process.env.REDIS_URL,
   LOG_LEVEL: process.env.LOG_LEVEL,
   SERVER_URL: process.env.SERVER_URL,
+  BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS),
 } as const

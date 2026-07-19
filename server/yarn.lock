@@ -155,6 +155,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/bcrypt@npm:^6.0.0":
+  version: 6.0.0
+  resolution: "@types/bcrypt@npm:6.0.0"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/48b66408838f5eb59791da5a77260cef59a5291ce0945f2caa3b5a6158c44b321b684b4aa7dce771852c63271c766cadd587374273451b300377a17015c1d51d
+  languageName: node
+  linkType: hard
+
 "@types/body-parser@npm:*":
   version: 1.19.6
   resolution: "@types/body-parser@npm:1.19.6"
@@ -250,6 +259,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jsonwebtoken@npm:^9.0.10":
+  version: 9.0.10
+  resolution: "@types/jsonwebtoken@npm:9.0.10"
+  dependencies:
+    "@types/ms": "npm:*"
+    "@types/node": "npm:*"
+  checksum: 10c0/0688ac8fb75f809201cb7e18a12b9d80ce539cb9dd27e1b01e11807cb1a337059e899b8ee3abc3f2c9417f02e363a3069d9eab9ef9724b1da1f0e10713514f94
+  languageName: node
+  linkType: hard
+
 "@types/morgan@npm:^1.9.10":
   version: 1.9.10
   resolution: "@types/morgan@npm:1.9.10"
@@ -259,12 +278,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/ms@npm:*":
+  version: 2.1.0
+  resolution: "@types/ms@npm:2.1.0"
+  checksum: 10c0/5ce692ffe1549e1b827d99ef8ff71187457e0eb44adbae38fdf7b9a74bae8d20642ee963c14516db1d35fa2652e65f47680fdf679dcbde52bbfadd021f497225
+  languageName: node
+  linkType: hard
+
 "@types/node@npm:*, @types/node@npm:^26.1.1":
   version: 26.1.1
   resolution: "@types/node@npm:26.1.1"
   dependencies:
     undici-types: "npm:~8.3.0"
   checksum: 10c0/25ac5093195736dd074d5027adbba85617bc951d5a41506ebd3b9073048acb7233613f3822d5f9b9447f9c0841c91f6387c46283916767e3ef79f23917452c46
+  languageName: node
+  linkType: hard
+
+"@types/nodemailer@npm:^8.0.1":
+  version: 8.0.1
+  resolution: "@types/nodemailer@npm:8.0.1"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/4370ac478a6811faaa64fcf769556515c72b78c66961cde22be75bb975ce8a964cfbe5e7c0988a99250f3250faa34357c73958b019b3c63dd138ea3784442032
   languageName: node
   linkType: hard
 
@@ -1486,6 +1521,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"nodemailer@npm:^9.0.3":
+  version: 9.0.3
+  resolution: "nodemailer@npm:9.0.3"
+  checksum: 10c0/9e93516fb9fcc8835b683cdf3b90135648dabf0133ac9b04890303c2e23eef1d7bae58fe98afb0e251ae10428b96f05df483deb78f0b49f47793debbb0383216
+  languageName: node
+  linkType: hard
+
 "nopt@npm:^10.0.0":
   version: 10.0.1
   resolution: "nopt@npm:10.0.1"
@@ -1939,13 +1981,16 @@ __metadata:
   resolution: "server@workspace:."
   dependencies:
     "@prisma/client": "npm:6"
+    "@types/bcrypt": "npm:^6.0.0"
     "@types/compression": "npm:^1.8.1"
     "@types/cookie-parser": "npm:^1.4.10"
     "@types/cors": "npm:^2.8.19"
     "@types/dotenv-safe": "npm:^9"
     "@types/express": "npm:^5.0.6"
+    "@types/jsonwebtoken": "npm:^9.0.10"
     "@types/morgan": "npm:^1.9.10"
     "@types/node": "npm:^26.1.1"
+    "@types/nodemailer": "npm:^8.0.1"
     "@types/swagger-jsdoc": "npm:^6"
     "@types/swagger-ui-express": "npm:^4.1.8"
     bcrypt: "npm:^6.0.0"
@@ -1958,6 +2003,7 @@ __metadata:
     helmet: "npm:^8.3.0"
     jsonwebtoken: "npm:^9.0.3"
     morgan: "npm:^1.11.0"
+    nodemailer: "npm:^9.0.3"
     pino: "npm:^10.3.1"
     pino-http: "npm:^11.0.0"
     pino-pretty: "npm:^13.1.3"

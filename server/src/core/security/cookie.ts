@@ -1,9 +1,12 @@
 import { CookieOptions } from 'express';
 
-const isProduction = process.env.NODE_ENV === 'production';
+import { env } from '../config/env';
+import { parseDurationToMs } from '../utils/duration';
 
-const accessTokenMaxAge = 15 * 60 * 1000; // 15 minutes
-const refreshTokenMaxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
+const isProduction = env.NODE_ENV === 'production';
+
+const accessTokenMaxAge = parseDurationToMs(env.JWT_ACCESS_EXPIRES_IN);
+const refreshTokenMaxAge = parseDurationToMs(env.JWT_REFRESH_EXPIRES_IN);
 
 export const accessTokenCookieOptions: CookieOptions = {
   httpOnly: true,

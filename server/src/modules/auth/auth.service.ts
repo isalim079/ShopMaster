@@ -1,5 +1,7 @@
 
+import { UserStatus } from '@prisma/client';
 
+import { env } from '../../core/config/env';
 import { hashPassword, comparePassword } from '../../core/security/bcrypt';
 import {
   compareOtp,
@@ -7,16 +9,21 @@ import {
   getOtpExpiry,
   hashOtp,
 } from '../../core/security/otp';
-
 import { sendMail } from '../../core/mail/mail.service';
 import { AppError } from '../../core/errors/app-error';
 import { HTTP_STATUS } from '../../core/constants/http-status';
+import { getExpiryDateFromDuration } from '../../core/utils/duration';
+import {
+  generateAccessToken,
+  generatePasswordResetToken,
+  generateRefreshToken,
+  hashToken,
+  verifyPasswordResetToken,
+  verifyRefreshToken,
+} from '../../core/security/jwt';
 import { toUserResponse } from './auth.mapper';
-
 import * as repository from './auth.repository';
-import { generateAccessToken, generatePasswordResetToken, generateRefreshToken, hashToken, verifyPasswordResetToken, verifyRefreshToken } from '../../core/security/jwt';
 import { JwtPayload, LoginResponse } from './auth.types';
-import { UserStatus } from '@prisma/client';
 
 
 
@@ -26,6 +33,7 @@ export const register = async (payload: {
   email: string;
   phone?: string;
   password: string;
+  organizationName: string;
 }) => {
   const existingUser = await repository.findUserByEmail(payload.email);
 
@@ -54,7 +62,12 @@ export const register = async (payload: {
   await sendMail({
     to: user.email,
     subject: 'Verify your email',
-    html: `<h2>Your OTP is <b>${otp}</b></h2>`,
+    html: `
+      <h2>Email Verification</h2>
+      <p>Your verification code is:</p>
+      <h1>${otp}</h1>
+      <p>This code expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
+    `,
   });
 
   return {
@@ -161,23 +174,26 @@ export const login = async (
     );
   }
 
+  if (user.organization.status !== 'ACTIVE') {
+    throw new AppError(
+      'Your organization is inactive.',
+      HTTP_STATUS.FORBIDDEN,
+    );
+  }
+
   const jwtPayload: JwtPayload = {
     userId: user.id,
     email: user.email,
-    role: user.role,
+    role: user.role.slug,
   };
 
   const accessToken = generateAccessToken(jwtPayload);
   const refreshToken = generateRefreshToken(jwtPayload);
 
-  const expiresAt = new Date(
-    Date.now() + 7 * 24 * 60 * 60 * 1000,
-  );
-
   await repository.saveRefreshToken(
     user.id,
     hashToken(refreshToken),
-    expiresAt,
+    getExpiryDateFromDuration(env.JWT_REFRESH_EXPIRES_IN),
   );
 
   return {
@@ -234,7 +250,7 @@ export const refreshToken = async (
   await repository.saveRefreshToken(
     payload.userId,
     hashToken(newRefreshToken),
-    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    getExpiryDateFromDuration(env.JWT_REFRESH_EXPIRES_IN),
   );
 
   return {
@@ -304,7 +320,7 @@ export const forgotPassword = async (
       <h2>Password Reset</h2>
       <p>Your OTP is:</p>
       <h1>${otp}</h1>
-      <p>This OTP expires in 10 minutes.</p>
+      <p>This OTP expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
     `,
   });
 
@@ -471,7 +487,7 @@ export const resendVerificationOtp = async (
       <h2>Email Verification</h2>
       <p>Your verification code is:</p>
       <h1>${otp}</h1>
-      <p>This code expires in 10 minutes.</p>
+      <p>This code expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
     `,
   });
 

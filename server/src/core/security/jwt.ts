@@ -1,23 +1,24 @@
 import jwt, { type SignOptions } from 'jsonwebtoken';
 import type { StringValue } from 'ms';
+import crypto from 'crypto';
 
 import { JwtPayload, PasswordResetTokenPayload } from '../../modules/auth/auth.types';
 import { env } from '../config/env';
-import crypto from 'crypto';
 
-const accessSecret = env.JWT_ACCESS_SECRET as string;
-const refreshSecret = env.JWT_REFRESH_SECRET as string;
-
-const accessExpiresIn = (env.JWT_ACCESS_EXPIRES_IN ??
-  '15m') as StringValue;
-const refreshExpiresIn = (env.JWT_REFRESH_EXPIRES_IN ??
-  '7d') as StringValue;
+const accessSecret = env.JWT_ACCESS_SECRET;
+const refreshSecret = env.JWT_REFRESH_SECRET;
+const passwordResetSecret = env.JWT_PASSWORD_RESET_SECRET;
 
 const accessSignOptions: SignOptions = {
-  expiresIn: accessExpiresIn,
+  expiresIn: env.JWT_ACCESS_EXPIRES_IN as StringValue,
 };
+
 const refreshSignOptions: SignOptions = {
-  expiresIn: refreshExpiresIn,
+  expiresIn: env.JWT_REFRESH_EXPIRES_IN as StringValue,
+};
+
+const passwordResetSignOptions: SignOptions = {
+  expiresIn: env.JWT_PASSWORD_RESET_EXPIRES_IN as StringValue,
 };
 
 export const generateAccessToken = (
@@ -46,16 +47,6 @@ export const verifyRefreshToken = (
 
 export const hashToken = (token: string): string => {
   return crypto.createHash('sha256').update(token).digest('hex');
-};
-
-const passwordResetSecret =
-  process.env.JWT_PASSWORD_RESET_SECRET as string;
-
-const passwordResetExpiresIn = (process.env
-  .JWT_PASSWORD_RESET_EXPIRES_IN ?? '10m') as StringValue;
-
-const passwordResetSignOptions: SignOptions = {
-  expiresIn: passwordResetExpiresIn,
 };
 
 export const generatePasswordResetToken = (

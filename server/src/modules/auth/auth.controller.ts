@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 
-
-
 import * as authService from './auth.service';
 import { asyncHandler } from '../../core/utils/async-handler';
 import { apiResponse } from '../../core/utils/api-response';
 import { HTTP_STATUS } from '../../core/constants/http-status';
-import { accessTokenCookieOptions, clearCookieOptions, refreshTokenCookieOptions } from '../../core/security/cookie';
+import {
+  accessTokenCookieOptions,
+  clearCookieOptions,
+  refreshTokenCookieOptions,
+} from '../../core/security/cookie';
+import { AppError } from '../../core/errors/app-error';
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.register(req.body);
@@ -59,11 +62,18 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
 
 export const refreshToken = asyncHandler(
   async (req: Request, res: Response) => {
-    const refreshToken =
+    const refreshTokenValue =
       req.cookies.refreshToken ?? req.body.refreshToken;
 
+    if (!refreshTokenValue) {
+      throw new AppError(
+        'Refresh token is required.',
+        HTTP_STATUS.UNAUTHORIZED,
+      );
+    }
+
     const result =
-      await authService.refreshToken(refreshToken);
+      await authService.refreshToken(refreshTokenValue);
 
     res.cookie(
       'accessToken',
@@ -86,10 +96,17 @@ export const refreshToken = asyncHandler(
 );
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
-  const refreshToken =
+  const refreshTokenValue =
     req.cookies.refreshToken ?? req.body.refreshToken;
 
-  const result = await authService.logout(refreshToken);
+  if (!refreshTokenValue) {
+    throw new AppError(
+      'Refresh token is required.',
+      HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  const result = await authService.logout(refreshTokenValue);
 
   res.clearCookie(
     'accessToken',

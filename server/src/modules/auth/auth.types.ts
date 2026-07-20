@@ -1,15 +1,20 @@
-import { UserRole, UserStatus } from '@prisma/client';
+import { Organization, Role, User, UserStatus } from '@prisma/client';
 
 export interface JwtPayload {
   userId: string;
   email: string;
-  role: UserRole;
+  role: string;
 }
 
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
 }
+
+export type UserWithRole = User & {
+  role: Role;
+  organization: Organization;
+};
 
 export interface LoginResponse {
   user: {
@@ -18,7 +23,16 @@ export interface LoginResponse {
     lastName: string | null;
     email: string;
     phone: string | null;
-    role: UserRole;
+    role: {
+      id: string;
+      name: string;
+      slug: string;
+    };
+    organization: {
+      id: string;
+      name: string;
+      slug: string;
+    };
     status: UserStatus;
     isEmailVerified: boolean;
     createdAt: Date;

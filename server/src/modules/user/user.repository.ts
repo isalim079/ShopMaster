@@ -1,31 +1,46 @@
-import { UserRole, UserStatus } from '@prisma/client';
+import { Prisma, UserStatus } from '@prisma/client';
 
 import { prisma } from '../../core/database';
-import { UpdateProfileInput } from './user.validation';
+import type { UpdateProfileInput } from './user.validation';
+import type { ListUsersFilters } from './user.types';
+
+const userWithRole = {
+  role: true,
+} satisfies Prisma.UserInclude;
 
 export const findById = (id: string) => {
   return prisma.user.findUnique({
     where: { id },
+    include: userWithRole,
   });
 };
 
-export const findMany = () => {
-  return prisma.user.findMany({
-    orderBy: {
-      createdAt: 'desc',
-    },
-  });
+export const findMany = (
+  filters: ListUsersFilters,
+  skip: number,
+  take: number,
+) => {
+  const where = buildWhere(filters);
+
+  return prisma.$transaction([
+    prisma.user.findMany({
+      where,
+      skip,
+      take,
+      include: userWithRole,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    }),
+    prisma.user.count({ where }),
+  ]);
 };
 
 export const updateProfile = (
   userId: string,
   payload: UpdateProfileInput,
 ) => {
-  const data: {
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-  } = {};
+  const data: Prisma.UserUpdateInput = {};
 
   if (payload.firstName !== undefined) {
     data.firstName = payload.firstName;
@@ -44,6 +59,7 @@ export const updateProfile = (
       id: userId,
     },
     data,
+    include: userWithRole,
   });
 };
 
@@ -63,15 +79,16 @@ export const updatePassword = (
 
 export const updateRole = (
   userId: string,
-  role: UserRole,
+  roleId: string,
 ) => {
   return prisma.user.update({
     where: {
       id: userId,
     },
     data: {
-      role,
+      roleId,
     },
+    include: userWithRole,
   });
 };
 
@@ -86,6 +103,7 @@ export const updateStatus = (
     data: {
       status,
     },
+    include: userWithRole,
   });
 };
 
@@ -95,4 +113,61 @@ export const deleteUser = (userId: string) => {
       id: userId,
     },
   });
+};
+
+export const findRoleById = (roleId: string) => {
+  return prisma.role.findUnique({
+    where: { id: roleId },
+  });
+};
+
+const buildWhere = (
+  filters: ListUsersFilters,
+): Prisma.UserWhereInput => {
+  const where: Prisma.UserWhereInput = {};
+
+  if (filters.roleId) {
+    where.roleId = filters.roleId;
+  }
+
+  if (filters.roleSlug) {
+    where.role = {
+      slug: filters.roleSlug,
+    };
+  }
+
+  if (filters.status) {
+    where.status = filters.status;
+  }
+
+  if (filters.search) {
+    where.OR = [
+      {
+        firstName: {
+          contains: filters.search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        lastName: {
+          contains: filters.search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        email: {
+          contains: filters.search,
+          mode: 'insensitive',
+        },
+      },
+      {
+        phone: {
+          contains: filters.search,
+          mode: 'insensitive',
+        },
+      },
+    ];
+  }
+
+  return where;
 };

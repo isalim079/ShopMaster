@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { env } from '../../core/config/env';
+
 const passwordSchema = z
   .string()
   .min(8, 'Password must be at least 8 characters.')
@@ -15,14 +17,11 @@ const passwordSchema = z
 export const registerSchema = z.object({
   body: z.object({
     firstName: z.string().trim().min(2).max(50),
-
     lastName: z.string().trim().max(50).optional(),
-
     email: z.email().trim().toLowerCase(),
-
     phone: z.string().trim().optional(),
-
     password: passwordSchema,
+    organizationName: z.string().trim().min(2).max(100),
   }),
 });
 
@@ -36,7 +35,7 @@ export const loginSchema = z.object({
 export const verifyEmailSchema = z.object({
   body: z.object({
     email: z.email().trim().toLowerCase(),
-    otp: z.string().length(6),
+    otp: z.string().length(env.OTP_LENGTH),
   }),
 });
 
@@ -55,20 +54,19 @@ export const forgotPasswordSchema = z.object({
 export const verifyResetOtpSchema = z.object({
   body: z.object({
     email: z.email().trim().toLowerCase(),
-    otp: z.string().length(6),
+    otp: z.string().length(env.OTP_LENGTH),
   }),
 });
 
 export const resetPasswordSchema = z.object({
   body: z.object({
-    email: z.email().trim().toLowerCase(),
-    otp: z.string().length(6),
+    resetToken: z.string().min(1),
     password: passwordSchema,
   }),
 });
 
 export const refreshTokenSchema = z.object({
   body: z.object({
-    refreshToken: z.string().min(1),
+    refreshToken: z.string().min(1).optional(),
   }),
 });

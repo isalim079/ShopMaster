@@ -1,22 +1,25 @@
 import { Router } from 'express';
-import { UserRole } from '@prisma/client';
 
 import * as userController from './user.controller';
-import { authenticate, authorize } from '../../core/middleware/auth.middleware';
+import {
+  authenticate,
+  authorize,
+  requirePermission,
+} from '../../core/middleware/auth.middleware';
 import { validate } from '../../core/middleware/validate.middleware';
 import {
   changePasswordSchema,
+  listUsersSchema,
   updateProfileSchema,
   updateUserRoleSchema,
   updateUserStatusSchema,
   userIdSchema,
 } from './user.validation';
+import { ROLE_SLUG } from '../../core/constants/roles';
+import { PERMISSION_SLUG } from '../../core/constants/permissions';
 
 const router = Router();
 
-/**
- * Current User
- */
 router.get(
   '/me',
   authenticate,
@@ -37,20 +40,20 @@ router.patch(
   userController.changePassword,
 );
 
-/**
- * Admin
- */
 router.get(
   '/',
   authenticate,
-  authorize(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  authorize(ROLE_SLUG.SUPER_ADMIN, ROLE_SLUG.ADMIN),
+  requirePermission(PERMISSION_SLUG.USERS_READ),
+  validate(listUsersSchema),
   userController.getUsers,
 );
 
 router.patch(
   '/:id/role',
   authenticate,
-  authorize(UserRole.SUPER_ADMIN),
+  authorize(ROLE_SLUG.SUPER_ADMIN),
+  requirePermission(PERMISSION_SLUG.USERS_WRITE),
   validate(updateUserRoleSchema),
   userController.updateUserRole,
 );
@@ -58,7 +61,8 @@ router.patch(
 router.patch(
   '/:id/status',
   authenticate,
-  authorize(UserRole.SUPER_ADMIN, UserRole.ADMIN),
+  authorize(ROLE_SLUG.SUPER_ADMIN, ROLE_SLUG.ADMIN),
+  requirePermission(PERMISSION_SLUG.USERS_WRITE),
   validate(updateUserStatusSchema),
   userController.updateUserStatus,
 );
@@ -66,7 +70,8 @@ router.patch(
 router.delete(
   '/:id',
   authenticate,
-  authorize(UserRole.SUPER_ADMIN),
+  authorize(ROLE_SLUG.SUPER_ADMIN),
+  requirePermission(PERMISSION_SLUG.USERS_DELETE),
   validate(userIdSchema),
   userController.deleteUser,
 );

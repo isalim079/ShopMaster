@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { UserStatus } from '@prisma/client';
+
+import { PAGINATION } from '../../core/constants/pagination';
 
 const passwordSchema = z
   .string()
@@ -27,6 +30,28 @@ export const changePasswordSchema = z.object({
   }),
 });
 
+export const listUsersSchema = z.object({
+  query: z.object({
+    page: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .optional()
+      .default(PAGINATION.DEFAULT_PAGE),
+    limit: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(PAGINATION.MAX_LIMIT)
+      .optional()
+      .default(PAGINATION.DEFAULT_LIMIT),
+    search: z.string().trim().optional(),
+    roleId: z.string().trim().min(1).max(64).optional(),
+    roleSlug: z.string().trim().optional(),
+    status: z.nativeEnum(UserStatus).optional(),
+  }),
+});
+
 export const userIdSchema = z.object({
   params: z.object({
     id: z.string().cuid(),
@@ -38,11 +63,7 @@ export const updateUserStatusSchema = z.object({
     id: z.string().cuid(),
   }),
   body: z.object({
-    status: z.enum([
-      'PENDING',
-      'ACTIVE',
-      'BLOCKED',
-    ]),
+    status: z.nativeEnum(UserStatus),
   }),
 });
 
@@ -51,12 +72,7 @@ export const updateUserRoleSchema = z.object({
     id: z.string().cuid(),
   }),
   body: z.object({
-    role: z.enum([
-      'SUPER_ADMIN',
-      'ADMIN',
-      'MANAGER',
-      'EMPLOYEE',
-    ]),
+    roleId: z.string().trim().min(1).max(64),
   }),
 });
 
@@ -67,3 +83,7 @@ export type UpdateProfileInput = z.infer<
 export type ChangePasswordInput = z.infer<
   typeof changePasswordSchema
 >['body'];
+
+export type ListUsersQuery = z.infer<
+  typeof listUsersSchema
+>['query'];

@@ -1,11 +1,10 @@
 import crypto from 'crypto';
 
-const OTP_LENGTH = 6;
-const OTP_EXPIRES_IN_MINUTES = 10;
+import { env } from '../config/env';
 
 export const generateOtp = (): string => {
-  const min = 10 ** (OTP_LENGTH - 1);
-  const max = 10 ** OTP_LENGTH - 1;
+  const min = 10 ** (env.OTP_LENGTH - 1);
+  const max = 10 ** env.OTP_LENGTH - 1;
 
   return crypto.randomInt(min, max + 1).toString();
 };
@@ -23,6 +22,6 @@ export const compareOtp = (
 
 export const getOtpExpiry = (): Date => {
   return new Date(
-    Date.now() + OTP_EXPIRES_IN_MINUTES * 60 * 1000,
+    Date.now() + env.OTP_EXPIRY_MINUTES * 60 * 1000,
   );
 };

@@ -4,6 +4,8 @@ import * as userService from './user.service';
 import { apiResponse } from '../../core/utils/api-response';
 import { HTTP_STATUS } from '../../core/constants/http-status';
 import { asyncHandler } from '../../core/utils/async-handler';
+import { clearCookieOptions } from '../../core/security/cookie';
+import type { ListUsersQuery } from './user.validation';
 
 export const getMe = asyncHandler(
   async (req: Request, res: Response) => {
@@ -36,11 +38,13 @@ export const updateProfile = asyncHandler(
 
 export const changePassword = asyncHandler(
   async (req: Request, res: Response) => {
-    const result =
-      await userService.changePassword(
-        req.user!.id,
-        req.body,
-      );
+    const result = await userService.changePassword(
+      req.user!.id,
+      req.body,
+    );
+
+    res.clearCookie('accessToken', clearCookieOptions);
+    res.clearCookie('refreshToken', clearCookieOptions);
 
     return apiResponse({
       res,
@@ -51,14 +55,17 @@ export const changePassword = asyncHandler(
 );
 
 export const getUsers = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const result = await userService.getUsers();
+  async (req: Request, res: Response) => {
+    const result = await userService.getUsers(
+      req.query as unknown as ListUsersQuery,
+    );
 
     return apiResponse({
       res,
       statusCode: HTTP_STATUS.OK,
       message: 'Users fetched successfully.',
-      data: result,
+      data: result.users,
+      meta: result.meta,
     });
   },
 );
@@ -66,11 +73,11 @@ export const getUsers = asyncHandler(
 export const updateUserRole = asyncHandler(
   async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    const result =
-      await userService.updateUserRole(
-        id,
-        req.body.role,
-      );
+    const result = await userService.updateUserRole(
+      req.user!.id,
+      id,
+      req.body.roleId,
+    );
 
     return apiResponse({
       res,
@@ -84,11 +91,11 @@ export const updateUserRole = asyncHandler(
 export const updateUserStatus = asyncHandler(
   async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    const result =
-      await userService.updateUserStatus(
-        id,
-        req.body.status,
-      );
+    const result = await userService.updateUserStatus(
+      req.user!.id,
+      id,
+      req.body.status,
+    );
 
     return apiResponse({
       res,
@@ -102,8 +109,10 @@ export const updateUserStatus = asyncHandler(
 export const deleteUser = asyncHandler(
   async (req: Request, res: Response) => {
     const id = req.params.id as string;
-    const result =
-      await userService.deleteUser(id);
+    const result = await userService.deleteUser(
+      req.user!.id,
+      id,
+    );
 
     return apiResponse({
       res,

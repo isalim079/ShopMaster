@@ -1,5 +1,7 @@
 import { Request } from 'express';
 
+import { PAGINATION } from '../constants/pagination';
+
 export interface PaginationOptions {
   page: number;
   limit: number;
@@ -8,10 +10,13 @@ export interface PaginationOptions {
 
 export const getPagination = (
   req: Request,
-  defaultLimit = 10,
-  maxLimit = 100,
+  defaultLimit = PAGINATION.DEFAULT_LIMIT,
+  maxLimit = PAGINATION.MAX_LIMIT,
 ): PaginationOptions => {
-  const page = Math.max(1, Number(req.query.page) || 1);
+  const page = Math.max(
+    1,
+    Number(req.query.page) || PAGINATION.DEFAULT_PAGE,
+  );
 
   const limit = Math.min(
     maxLimit,

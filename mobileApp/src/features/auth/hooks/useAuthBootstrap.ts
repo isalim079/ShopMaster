@@ -25,9 +25,16 @@ export function useAuthBootstrap() {
 
     async function bootstrap() {
       try {
-        const [accessToken, refreshToken] = await Promise.all([
+        const tokenPromise = Promise.all([
           getAccessToken(),
           getRefreshToken(),
+        ]);
+        const timeoutPromise = new Promise<[null, null]>((resolve) => {
+          setTimeout(() => resolve([null, null]), 3000);
+        });
+        const [accessToken, refreshToken] = await Promise.race([
+          tokenPromise,
+          timeoutPromise,
         ]);
 
         if (!accessToken || !refreshToken) {
@@ -40,38 +47,48 @@ export function useAuthBootstrap() {
         const expired = exp * 1000 < Date.now();
 
         if (expired) {
-          const response = await fetch(`${env.API_BASE_URL}/auth/refresh-token`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({ refreshToken }),
-          });
+          const controller = new AbortController();
+          const abortTimer = setTimeout(() => controller.abort(), 5000);
+          try {
+            const response = await fetch(
+              `${env.API_BASE_URL}/auth/refresh-token`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  Accept: 'application/json',
+                },
+                body: JSON.stringify({ refreshToken }),
+                signal: controller.signal,
+              },
+            );
 
-          if (!response.ok) {
-            dispatch(clearSession());
-            return;
-          }
+            if (!response.ok) {
+              dispatch(clearSession());
+              return;
+            }
 
-          const json = (await response.json()) as {
-            data?: {
-              tokens?: { accessToken: string; refreshToken: string };
-              user?: AuthUser;
+            const json = (await response.json()) as {
+              data?: {
+                tokens?: { accessToken: string; refreshToken: string };
+                user?: AuthUser;
+              };
             };
-          };
 
-          if (!json.data?.tokens) {
-            dispatch(clearSession());
-            return;
-          }
+            if (!json.data?.tokens) {
+              dispatch(clearSession());
+              return;
+            }
 
-          await setTokens(json.data.tokens);
+            await setTokens(json.data.tokens);
 
-          if (json.data.user) {
-            dispatch(setSession(json.data.user));
-          } else {
-            dispatch(setHydrated(true));
+            if (json.data.user) {
+              dispatch(setSession(json.data.user));
+            } else {
+              dispatch(setHydrated(true));
+            }
+          } finally {
+            clearTimeout(abortTimer);
           }
           return;
         }

@@ -23,9 +23,17 @@ function BootstrapGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isHydrated) {
-      SplashScreen.hideAsync();
+      void SplashScreen.hideAsync();
     }
   }, [isHydrated]);
+
+  // Never leave native splash forever if JS hangs / Metro slow
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void SplashScreen.hideAsync();
+    }, 4000);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (!isHydrated) {
     return <LoadingState message="Starting ShopMaster…" />;

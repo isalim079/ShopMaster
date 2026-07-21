@@ -1,0 +1,25 @@
+export const API_TAGS = [
+  'Auth',
+  'User',
+  'Organization',
+  'Settings',
+  'Customer',
+  'Supplier',
+  'Brand',
+  'Category',
+  'Warehouse',
+  'Product',
+  'Inventory',
+  'Purchase',
+  'PurchaseReturn',
+  'Sale',
+  'SaleReturn',
+  'Payment',
+  'Expense',
+  'Dashboard',
+  'Report',
+  'Notification',
+  'Upload',
+] as const;
+
+export type ApiTag = (typeof API_TAGS)[number];

@@ -56,6 +56,7 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     message: 'Login successful.',
     data: {
       user: result.user,
+      tokens: result.tokens,
     },
   });
 });
@@ -91,6 +92,12 @@ export const refreshToken = asyncHandler(
       res,
       statusCode: HTTP_STATUS.OK,
       message: 'Token refreshed successfully.',
+      data: {
+        tokens: {
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        },
+      },
     });
   },
 );

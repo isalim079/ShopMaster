@@ -16,6 +16,7 @@ import { clearSession } from '@/src/features/auth/slices/authSlice';
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: env.API_BASE_URL,
+  timeout: 20_000,
   prepareHeaders: async (headers) => {
     const accessToken = await getAccessToken();
     if (accessToken) {

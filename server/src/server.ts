@@ -6,7 +6,7 @@ import { logger } from './core/logger/logger';
 
 const server = http.createServer(app)
 
-server.listen(env.PORT, () => {
+server.listen(env.PORT, '0.0.0.0', () => {
   logger.info(`${env.APP_NAME} is running on port ${env.PORT}`)
 })
 

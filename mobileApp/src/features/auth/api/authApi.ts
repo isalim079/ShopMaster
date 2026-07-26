@@ -61,6 +61,41 @@ export const authApi = baseApi.injectEndpoints({
         message: response.message,
       }),
     }),
+    forgotPassword: build.mutation<{ message: string }, { email: string }>({
+      query: (body) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiSuccess<unknown>) => ({
+        message: response.message,
+      }),
+    }),
+    verifyResetOtp: build.mutation<
+      { resetToken: string },
+      { email: string; otp: string }
+    >({
+      query: (body) => ({
+        url: '/auth/verify-reset-otp',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiSuccess<{ resetToken: string }>) =>
+        response.data,
+    }),
+    resetPassword: build.mutation<
+      { message: string },
+      { resetToken: string; password: string }
+    >({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiSuccess<unknown>) => ({
+        message: response.message,
+      }),
+    }),
     logout: build.mutation<{ message: string }, { refreshToken: string }>({
       query: (body) => ({
         url: '/auth/logout',
@@ -79,5 +114,8 @@ export const {
   useRegisterMutation,
   useVerifyEmailMutation,
   useResendVerificationMutation,
+  useForgotPasswordMutation,
+  useVerifyResetOtpMutation,
+  useResetPasswordMutation,
   useLogoutMutation,
 } = authApi;

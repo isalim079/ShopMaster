@@ -6,4 +6,7 @@ export { LoadingState, EmptyState, ErrorState } from './ScreenStates';
 export { SearchField } from './SearchField';
 export { ChipSelect } from './ChipSelect';
 export { IdPicker } from './IdPicker';
+export { KeyboardAwareScrollScreen } from './KeyboardAwareScrollScreen';
+export { PhoneField, toE164 } from './PhoneField';
 export type { PickerOption } from './IdPicker';
+export type { PhoneFieldProps } from './PhoneField';

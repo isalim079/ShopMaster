@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { useLoginMutation } from '@/src/features/auth/api/authApi';
 import {
@@ -11,8 +12,15 @@ import {
 } from '@/src/features/auth/schemas/authSchemas';
 import { setTokens } from '@/src/features/auth/services/tokenStorage';
 import { setSession } from '@/src/features/auth/slices/authSlice';
-import { Button, TextField, AppText } from '@/src/shared/components/ui';
+import {
+  Button,
+  TextField,
+  AppText,
+  KeyboardAwareScrollScreen,
+} from '@/src/shared/components/ui';
 import { useAppDispatch } from '@/src/store/hooks';
+import { getErrorMessage } from '@/src/shared/lib/errors';
+import { colors } from '@/src/theme/tokens';
 
 export function LoginScreen() {
   const dispatch = useAppDispatch();
@@ -36,75 +44,124 @@ export function LoginScreen() {
       dispatch(setSession(result.user));
       router.replace('/(app)/(tabs)');
     } catch (error) {
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ??
-        'Login failed. Check your credentials.';
+      const message = getErrorMessage(
+        error,
+        'Login failed. Check your credentials.',
+      );
       setFormError(message);
       Alert.alert('Login failed', message);
     }
   });
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="flex-grow justify-center px-4 py-8"
-        keyboardShouldPersistTaps="handled"
-      >
-        <View className="mb-8 gap-2">
-          <AppText variant="headline">ShopMaster</AppText>
-          <AppText variant="caption">Sign in to manage your shop</AppText>
-        </View>
-
-        <View className="gap-4">
-          <Controller
-            control={control}
-            name="email"
-            render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-              <TextField
-                label="Email"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                autoComplete="email"
-                value={value}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={error?.message}
-              />
-            )}
+    <KeyboardAwareScrollScreen centerContent>
+      <View className="mb-8 items-center gap-3">
+        <View className="h-16 w-16 items-center justify-center rounded-full bg-primary-container">
+          <MaterialCommunityIcons
+            name="storefront-outline"
+            size={32}
+            color={colors.brand.primary}
           />
+        </View>
+        <View className="items-center gap-1">
+          <AppText variant="headline" className="text-center">
+            ShopMaster
+          </AppText>
+          <AppText variant="caption" className="text-center">
+            Sign in to manage your shop
+          </AppText>
+        </View>
+      </View>
 
+      <View className="gap-4 rounded-lg border border-border bg-surface p-5 dark:border-border-dark dark:bg-surface-dark">
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+            <TextField
+              label="Email"
+              leftIcon="email-outline"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              autoComplete="email"
+              textContentType="emailAddress"
+              returnKeyType="next"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={error?.message}
+              placeholder="you@shop.com"
+            />
+          )}
+        />
+
+        <View className="gap-1.5">
           <Controller
             control={control}
             name="password"
             render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
               <TextField
                 label="Password"
+                leftIcon="lock-outline"
                 secureTextEntry
                 autoComplete="password"
+                textContentType="password"
+                returnKeyType="done"
                 value={value}
                 onChangeText={onChange}
                 onBlur={onBlur}
                 error={error?.message}
+                placeholder="Your password"
+                onSubmitEditing={onSubmit}
               />
             )}
           />
-
-          {formError ? (
-            <AppText className="text-danger" variant="caption">
-              {formError}
-            </AppText>
-          ) : null}
-
-          <Button label="Sign in" onPress={onSubmit} loading={isLoading} />
-
-          <Link href="/(auth)/register" asChild>
-            <Button label="Create account" variant="ghost" />
+          <Link href="/forgot-password" asChild>
+            <Pressable
+              accessibilityRole="link"
+              hitSlop={8}
+              className="self-end py-1 active:opacity-70"
+            >
+              <AppText variant="caption" className="font-sans-medium text-primary">
+                Forgot password?
+              </AppText>
+            </Pressable>
           </Link>
         </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+
+        {formError ? (
+          <View className="flex-row items-start gap-2 rounded-md bg-danger/10 px-3 py-2.5">
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={18}
+              color={colors.brand.danger}
+            />
+            <AppText className="flex-1 text-danger" variant="caption">
+              {formError}
+            </AppText>
+          </View>
+        ) : null}
+
+        <Button
+          label="Sign in"
+          icon="login"
+          onPress={onSubmit}
+          loading={isLoading}
+          size="lg"
+          className="mt-1"
+        />
+      </View>
+
+      <View className="mt-5 flex-row flex-wrap items-center justify-center gap-x-1">
+        <AppText variant="caption">New to ShopMaster?</AppText>
+        <Link href="/register" asChild>
+          <Pressable accessibilityRole="link" hitSlop={6} className="active:opacity-70">
+            <AppText variant="caption" className="font-sans-semibold text-primary">
+              Create account
+            </AppText>
+          </Pressable>
+        </Link>
+      </View>
+    </KeyboardAwareScrollScreen>
   );
 }

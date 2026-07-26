@@ -19,7 +19,14 @@ export const registerSchema = z.object({
     firstName: z.string().trim().min(2).max(50),
     lastName: z.string().trim().max(50).optional(),
     email: z.email().trim().toLowerCase(),
-    phone: z.string().trim().optional(),
+    phone: z
+      .string()
+      .trim()
+      .regex(
+        /^\+[1-9]\d{6,14}$/,
+        'Phone must be a valid E.164 number (e.g. +8801712345678).',
+      )
+      .optional(),
     password: passwordSchema,
     organizationName: z.string().trim().min(2).max(100),
   }),

@@ -1,9 +1,11 @@
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { cn } from '@/src/theme/cn';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
+type IconName = keyof typeof MaterialCommunityIcons.glyphMap;
 
 type ButtonProps = {
   label: string;
@@ -12,6 +14,7 @@ type ButtonProps = {
   size?: ButtonSize;
   loading?: boolean;
   disabled?: boolean;
+  icon?: IconName;
   className?: string;
   testID?: string;
 };
@@ -38,6 +41,14 @@ const sizeClasses: Record<ButtonSize, string> = {
   lg: 'min-h-14 px-6',
 };
 
+const iconColorForVariant: Record<ButtonVariant, string> = {
+  primary: '#FFFFFF',
+  secondary: '#FFFFFF',
+  outline: '#059669',
+  ghost: '#059669',
+  danger: '#FFFFFF',
+};
+
 export function Button({
   label,
   onPress,
@@ -45,6 +56,7 @@ export function Button({
   size = 'md',
   loading = false,
   disabled = false,
+  icon,
   className,
   testID,
 }: ButtonProps) {
@@ -58,7 +70,7 @@ export function Button({
       disabled={isDisabled}
       onPress={onPress}
       className={cn(
-        'flex-row items-center justify-center rounded-lg',
+        'flex-row items-center justify-center gap-2 rounded-lg',
         variantClasses[variant],
         sizeClasses[size],
         isDisabled && 'opacity-40',
@@ -66,16 +78,29 @@ export function Button({
       )}
     >
       {loading ? (
-        <ActivityIndicator color={variant === 'outline' || variant === 'ghost' ? '#059669' : '#fff'} />
+        <ActivityIndicator
+          color={
+            variant === 'outline' || variant === 'ghost' ? '#059669' : '#fff'
+          }
+        />
       ) : (
-        <Text
-          className={cn(
-            'font-sans-semibold text-button',
-            textVariantClasses[variant],
-          )}
-        >
-          {label}
-        </Text>
+        <View className="flex-row items-center gap-2">
+          {icon ? (
+            <MaterialCommunityIcons
+              name={icon}
+              size={18}
+              color={iconColorForVariant[variant]}
+            />
+          ) : null}
+          <Text
+            className={cn(
+              'font-sans-semibold text-button',
+              textVariantClasses[variant],
+            )}
+          >
+            {label}
+          </Text>
+        </View>
       )}
     </Pressable>
   );

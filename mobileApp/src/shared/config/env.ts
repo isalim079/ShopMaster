@@ -5,19 +5,28 @@ function required(key: string, fallback?: string): string {
   if (value === undefined || value === '') {
     throw new Error(`Missing env: ${key}`);
   }
-  return value;
+  return value.trim();
 }
 
 const scheme = required('EXPO_PUBLIC_API_SCHEME', 'http');
 const hostRaw = required('EXPO_PUBLIC_API_HOST', 'localhost');
-const port = required('EXPO_PUBLIC_API_PORT', '5000');
+const portRaw = required('EXPO_PUBLIC_API_PORT', '5000');
 const version = required('EXPO_PUBLIC_API_VERSION', 'v1');
+
+if (!/^\d{2,5}$/.test(portRaw)) {
+  throw new Error(
+    `Invalid EXPO_PUBLIC_API_PORT="${portRaw}". Expected digits like 5000.`,
+  );
+}
+
+const port = portRaw;
 
 function resolveHost(host: string): string {
   if (
     Platform.OS === 'android' &&
     (host === 'localhost' || host === '127.0.0.1')
   ) {
+    // Android emulator → host machine loopback
     return '10.0.2.2';
   }
   return host;
@@ -44,3 +53,9 @@ export const env = {
 } as const;
 
 export type Env = typeof env;
+
+if (__DEV__) {
+  // Helps diagnose emulator/device networking without leaking in production UI.
+  // eslint-disable-next-line no-console
+  console.log(`[ShopMaster] API_BASE_URL=${env.API_BASE_URL}`);
+}

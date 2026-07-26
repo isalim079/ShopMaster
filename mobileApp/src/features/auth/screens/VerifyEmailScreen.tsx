@@ -12,6 +12,7 @@ import {
   verifyEmailSchema,
   type VerifyEmailFormValues,
 } from '@/src/features/auth/schemas/authSchemas';
+import { getErrorMessage } from '@/src/shared/lib/errors';
 import { Button, TextField, AppText } from '@/src/shared/components/ui';
 
 export function VerifyEmailScreen() {
@@ -36,10 +37,7 @@ export function VerifyEmailScreen() {
         { text: 'Sign in', onPress: () => router.replace('/(auth)/login') },
       ]);
     } catch (error) {
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ??
-        'Verification failed.';
-      setFormError(message);
+      setFormError(getErrorMessage(error, 'Verification failed.'));
     }
   });
 
@@ -53,10 +51,7 @@ export function VerifyEmailScreen() {
       const result = await resend({ email }).unwrap();
       Alert.alert('OTP sent', result.message);
     } catch (error) {
-      const message =
-        (error as { data?: { message?: string } })?.data?.message ??
-        'Could not resend OTP.';
-      setFormError(message);
+      setFormError(getErrorMessage(error, 'Could not resend OTP.'));
     }
   };
 

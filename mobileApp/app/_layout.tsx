@@ -1,6 +1,7 @@
 import '../global.css';
 
 import { useEffect } from 'react';
+import { View } from 'react-native';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { Provider } from 'react-redux';
@@ -15,23 +16,30 @@ import { useAppSelector } from '@/src/store/hooks';
 
 export { ErrorBoundary } from 'expo-router';
 
-SplashScreen.preventAutoHideAsync();
+// Keep splash only briefly — never block forever if Metro/JS slow
+void SplashScreen.preventAutoHideAsync().catch(() => undefined);
+
+function hideSplash() {
+  void SplashScreen.hideAsync().catch(() => undefined);
+}
 
 function BootstrapGate({ children }: { children: React.ReactNode }) {
   useAuthBootstrap();
   const isHydrated = useAppSelector((s) => s.auth.isHydrated);
 
   useEffect(() => {
+    // Hide as soon as React mounts — do not wait on auth
+    hideSplash();
+  }, []);
+
+  useEffect(() => {
     if (isHydrated) {
-      void SplashScreen.hideAsync();
+      hideSplash();
     }
   }, [isHydrated]);
 
-  // Never leave native splash forever if JS hangs / Metro slow
   useEffect(() => {
-    const timer = setTimeout(() => {
-      void SplashScreen.hideAsync();
-    }, 4000);
+    const timer = setTimeout(hideSplash, 1500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -47,14 +55,16 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
         <ThemeProvider>
-          <BootstrapGate>
-            <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="index" />
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(app)" />
-              <Stack.Screen name="+not-found" />
-            </Stack>
-          </BootstrapGate>
+          <View style={{ flex: 1 }}>
+            <BootstrapGate>
+              <Stack screenOptions={{ headerShown: false }}>
+                <Stack.Screen name="index" />
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(app)" />
+                <Stack.Screen name="+not-found" />
+              </Stack>
+            </BootstrapGate>
+          </View>
         </ThemeProvider>
       </Provider>
     </GestureHandlerRootView>

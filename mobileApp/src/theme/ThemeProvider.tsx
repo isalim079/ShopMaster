@@ -1,6 +1,6 @@
-import { View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Appearance, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useColorScheme } from 'nativewind';
 
 import { useAppSelector } from '@/src/store/hooks';
 import { cn } from './cn';
@@ -11,9 +11,19 @@ type ThemeProviderProps = {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const preference = useAppSelector((s) => s.theme.preference);
-  const systemScheme = useColorScheme();
+  const [systemScheme, setSystemScheme] = useState<'light' | 'dark'>(
+    Appearance.getColorScheme() === 'dark' ? 'dark' : 'light',
+  );
+
+  useEffect(() => {
+    const sub = Appearance.addChangeListener(({ colorScheme }) => {
+      setSystemScheme(colorScheme === 'dark' ? 'dark' : 'light');
+    });
+    return () => sub.remove();
+  }, []);
+
   const resolved =
-    preference === 'system' ? (systemScheme ?? 'light') : preference;
+    preference === 'system' ? systemScheme : preference;
   const isDark = resolved === 'dark';
 
   return (

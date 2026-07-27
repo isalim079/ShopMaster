@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 function required(key: string, fallback?: string): string {
   const value = process.env[key] ?? fallback;
@@ -21,14 +22,38 @@ if (!/^\d{2,5}$/.test(portRaw)) {
 
 const port = portRaw;
 
+/**
+ * Resolve API host for the current runtime.
+ * - Explicit non-loopback host: used as-is (LAN IP / staging / prod).
+ * - Android emulator + localhost: 10.0.2.2 (host loopback from AVD).
+ * - Android physical + localhost: keep localhost (needs `adb reverse`) OR
+ *   EXPO_PUBLIC_API_LAN_HOST when set.
+ */
 function resolveHost(host: string): string {
-  if (
-    Platform.OS === 'android' &&
-    (host === 'localhost' || host === '127.0.0.1')
-  ) {
-    // Android emulator → host machine loopback
-    return '10.0.2.2';
+  if (host !== 'localhost' && host !== '127.0.0.1') {
+    return host;
   }
+
+  if (Platform.OS !== 'android') {
+    return host;
+  }
+
+  const emulatorHost =
+    process.env.EXPO_PUBLIC_API_ANDROID_EMULATOR_HOST?.trim() || '10.0.2.2';
+  const lanHost = process.env.EXPO_PUBLIC_API_LAN_HOST?.trim();
+
+  // Constants.isDevice === false → emulator/simulator
+  const isPhysicalDevice = Constants.isDevice === true;
+
+  if (!isPhysicalDevice) {
+    return emulatorHost;
+  }
+
+  // Physical phone cannot reach 10.0.2.2. Prefer LAN IP, else localhost + adb reverse.
+  if (lanHost) {
+    return lanHost;
+  }
+
   return host;
 }
 
@@ -55,7 +80,8 @@ export const env = {
 export type Env = typeof env;
 
 if (__DEV__) {
-  // Helps diagnose emulator/device networking without leaking in production UI.
   // eslint-disable-next-line no-console
-  console.log(`[ShopMaster] API_BASE_URL=${env.API_BASE_URL}`);
+  console.log(
+    `[ShopMaster] API_BASE_URL=${env.API_BASE_URL} isDevice=${String(Constants.isDevice)}`,
+  );
 }

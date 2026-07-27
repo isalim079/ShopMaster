@@ -1,12 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import {
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  type ScrollViewProps,
-} from 'react-native';
+import { Platform, View, type ScrollViewProps } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  KeyboardAwareScrollView,
+  KeyboardEvents,
+} from 'react-native-keyboard-controller';
 
 import { cn } from '@/src/theme/cn';
 
@@ -14,79 +12,75 @@ type KeyboardAwareScrollScreenProps = {
   children: ReactNode;
   className?: string;
   contentContainerClassName?: string;
-  /** Extra offset above keyboard (e.g. custom header height). */
-  keyboardVerticalOffset?: number;
-  /** Vertically center short content (login). Long forms should leave false. */
+  /** Space between focused input and keyboard top. */
+  bottomOffset?: number;
+  /** Center short screens only (login). Never use on long forms. */
   centerContent?: boolean;
   scrollViewProps?: Omit<
     ScrollViewProps,
-    'children' | 'contentContainerClassName' | 'contentContainerStyle'
+    'children' | 'contentContainerStyle' | 'style'
   >;
 };
 
 /**
- * Production keyboard + scroll shell:
- * - iOS: KAV padding + ScrollView `automaticallyAdjustKeyboardInsets`
- * - Android: `softwareKeyboardLayoutMode: resize` + safe-area bottom pad
- * - Interactive / on-drag keyboard dismiss
+ * Production keyboard shell powered by `react-native-keyboard-controller`
+ * (Expo-recommended). Auto-scrolls focused fields above keyboard on iOS + Android.
  */
 export function KeyboardAwareScrollScreen({
   children,
   className,
   contentContainerClassName,
-  keyboardVerticalOffset = 0,
+  bottomOffset = 24,
   centerContent = false,
   scrollViewProps,
 }: KeyboardAwareScrollScreenProps) {
   const insets = useSafeAreaInsets();
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
 
   useEffect(() => {
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-
-    const showSub = Keyboard.addListener(showEvent, () => setKeyboardVisible(true));
-    const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
-
+    const show = KeyboardEvents.addListener('keyboardWillShow', () => {
+      setKeyboardOpen(true);
+    });
+    const hide = KeyboardEvents.addListener('keyboardWillHide', () => {
+      setKeyboardOpen(false);
+    });
     return () => {
-      showSub.remove();
-      hideSub.remove();
+      show.remove();
+      hide.remove();
     };
   }, []);
 
+  const useCentering = centerContent && !keyboardOpen;
   const topPad = Math.max(insets.top, 16);
-  const bottomPad = Math.max(insets.bottom, 16) + (keyboardVisible ? 12 : 24);
+  const bottomPad = Math.max(insets.bottom, 16) + (keyboardOpen ? 16 : 28);
 
   return (
-    <KeyboardAvoidingView
+    <View
       className={cn('flex-1 bg-background dark:bg-background-dark', className)}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={{ flex: 1 }}
     >
-      <ScrollView
-        className="flex-1"
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        bottomOffset={bottomOffset}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-        showsVerticalScrollIndicator={false}
+        showsVerticalScrollIndicator
         bounces={false}
         overScrollMode="never"
-        alwaysBounceVertical={false}
-        automaticallyAdjustKeyboardInsets={Platform.OS === 'ios'}
-        automaticallyAdjustsScrollIndicatorInsets
-        contentInsetAdjustmentBehavior="automatic"
-        contentContainerClassName={cn(
-          'flex-grow px-5',
-          centerContent && !keyboardVisible && 'justify-center',
-          contentContainerClassName,
-        )}
+        nestedScrollEnabled
+        contentContainerClassName={cn('px-5', contentContainerClassName)}
         contentContainerStyle={{
+          // Long forms: size to children so scroll works.
+          // Short screens: grow + center only when keyboard closed.
+          flexGrow: useCentering ? 1 : undefined,
+          justifyContent: useCentering ? 'center' : undefined,
           paddingTop: topPad,
           paddingBottom: bottomPad,
         }}
         {...scrollViewProps}
       >
         {children}
-      </ScrollView>
-    </KeyboardAvoidingView>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }

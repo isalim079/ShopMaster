@@ -29,6 +29,7 @@
     "react-native": "0.86.0",
     "react-native-country-picker-modal": "^2.0.0",
     "react-native-gesture-handler": "~2.32.0",
+    "react-native-keyboard-controller": "1.21.9",
     "react-native-reanimated": "4.5.0",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
@@ -46,9 +47,10 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start --dev-client",
+    "start": "node ./scripts/android-api-tunnel.js && expo start --dev-client",
     "start:go": "expo start",
-    "android": "expo run:android",
+    "android": "node ./scripts/android-api-tunnel.js && expo run:android",
+    "android:reverse": "node ./scripts/android-api-tunnel.js",
     "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",

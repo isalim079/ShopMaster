@@ -31,9 +31,7 @@ export function VerifyResetOtpScreen() {
   const [resend, { isLoading: isResending }] = useForgotPasswordMutation();
   const [formError, setFormError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(
-    emailParam
-      ? 'If an account exists for this email, a reset code was sent.'
-      : null,
+    emailParam ? 'A reset code was sent to your email.' : null,
   );
 
   const { control, handleSubmit, getValues } = useForm<VerifyResetOtpFormValues>({
@@ -76,8 +74,16 @@ export function VerifyResetOtpScreen() {
     setFormError(null);
     try {
       await resend({ email }).unwrap();
-      setInfo('If an account exists for this email, a new code was sent.');
+      setInfo('A new reset code was sent to your email.');
     } catch (error) {
+      if (
+        (error as { status?: number })?.status === 404 ||
+        (error as { data?: { details?: { code?: string } } })?.data?.details
+          ?.code === 'USER_NOT_FOUND'
+      ) {
+        setFormError('User not found.');
+        return;
+      }
       setFormError(getErrorMessage(error, 'Could not resend code.'));
     }
   };

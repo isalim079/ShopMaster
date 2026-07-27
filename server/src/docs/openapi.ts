@@ -234,7 +234,9 @@ export const openApiSpec = {
           },
         },
         responses: {
-          '200': { description: 'OTP sent if account exists' },
+          '200': { description: 'Password reset OTP sent' },
+          '404': { description: 'User not found' },
+          '429': { description: 'Too many requests' },
         },
       },
     },

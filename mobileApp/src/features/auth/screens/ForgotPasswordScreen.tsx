@@ -15,11 +15,25 @@ import {
   Button,
   KeyboardAwareScrollScreen,
   TextField,
+  useToast,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
 import { colors } from '@/src/theme/tokens';
 
+function isUserNotFound(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const err = error as {
+    status?: number;
+    data?: { message?: string; details?: { code?: string } };
+  };
+  if (err.data?.details?.code === 'USER_NOT_FOUND') return true;
+  if (err.status === 404) return true;
+  const message = err.data?.message?.toLowerCase() ?? '';
+  return message.includes('user not found');
+}
+
 export function ForgotPasswordScreen() {
+  const { showToast } = useToast();
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -30,13 +44,25 @@ export function ForgotPasswordScreen() {
 
   const onSubmit = handleSubmit(async (values) => {
     setFormError(null);
+    const email = values.email.trim().toLowerCase();
     try {
-      await forgotPassword(values).unwrap();
+      const result = await forgotPassword({ email }).unwrap();
+      showToast({
+        message: result.message || 'Password reset code sent to your email.',
+        variant: 'success',
+      });
       router.push({
         pathname: '/verify-reset-otp',
-        params: { email: values.email.trim().toLowerCase() },
+        params: { email },
       });
     } catch (error) {
+      if (isUserNotFound(error)) {
+        showToast({
+          message: 'User not found.',
+          variant: 'error',
+        });
+        return;
+      }
       setFormError(
         getErrorMessage(error, 'Could not send reset code. Try again.'),
       );
@@ -45,7 +71,7 @@ export function ForgotPasswordScreen() {
 
   return (
     <KeyboardAwareScrollScreen centerContent>
-      <Link href="/(auth)/login" asChild>
+      <Link href="/login" asChild>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Back to sign in"
@@ -73,8 +99,8 @@ export function ForgotPasswordScreen() {
             Forgot password
           </AppText>
           <AppText variant="caption" className="text-center">
-            Enter your account email. We will send a 6-digit reset code if the
-            account exists.
+            Enter your account email. We will verify it and send a 6-digit reset
+            code.
           </AppText>
         </View>
       </View>

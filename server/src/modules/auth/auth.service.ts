@@ -285,24 +285,14 @@ export const logout = async (
 export const forgotPassword = async (
   email: string,
 ) => {
-  const user = await repository.findUserByEmail(email);
+  const normalized = email.trim().toLowerCase();
+  const user = await repository.findUserByEmail(normalized);
 
-  /**
-   * Prevent email enumeration attacks.
-   * Always return the same response.
-   */
-  if (!user) {
-    return {
-      message:
-        'If the account exists, a password reset code has been sent.',
-    };
-  }
-
-  if (user.status !== UserStatus.ACTIVE) {
-    return {
-      message:
-        'If the account exists, a password reset code has been sent.',
-    };
+  // Explicit not-found for product UX. Mitigate abuse via route rate limit.
+  if (!user || user.status !== UserStatus.ACTIVE) {
+    throw new AppError('User not found.', HTTP_STATUS.NOT_FOUND, {
+      code: 'USER_NOT_FOUND',
+    });
   }
 
   const otp = generateOtp();
@@ -325,8 +315,7 @@ export const forgotPassword = async (
   });
 
   return {
-    message:
-      'If the account exists, a password reset code has been sent.',
+    message: 'Password reset code sent to your email.',
   };
 };
 

@@ -21,6 +21,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { isStaffRole } from '@/src/shared/lib/roles';
 import { showSuccessModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/utils/format';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
@@ -182,6 +183,11 @@ export function ProfileScreen() {
                 authUser?.role?.slug ||
                 '—'}
             </AppText>
+            {isStaffRole(me?.role?.slug ?? authUser?.role?.slug) ? (
+              <AppText variant="caption">
+                Password changes and resets are managed by your shop admin.
+              </AppText>
+            ) : null}
         </View>
 
           {formError ? (

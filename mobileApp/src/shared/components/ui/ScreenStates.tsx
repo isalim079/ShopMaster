@@ -1,6 +1,6 @@
 import { ActivityIndicator, View } from 'react-native';
 
-import { AppText } from '@/src/shared/components/ui';
+import { AppText } from './Text';
 
 type ScreenStateProps = {
   message?: string;

@@ -115,6 +115,44 @@ export const deleteUser = (userId: string) => {
   });
 };
 
+export const findRoleBySlug = (slug: string) => {
+  return prisma.role.findUnique({
+    where: { slug },
+  });
+};
+
+export const findByEmail = (email: string) => {
+  return prisma.user.findUnique({
+    where: { email },
+    include: userWithRole,
+  });
+};
+
+export const createTeamMember = (data: {
+  firstName: string;
+  lastName?: string | null;
+  email: string;
+  phone?: string | null;
+  password: string;
+  roleId: string;
+  organizationId: string;
+}) => {
+  return prisma.user.create({
+    data: {
+      firstName: data.firstName,
+      lastName: data.lastName ?? null,
+      email: data.email,
+      phone: data.phone ?? null,
+      password: data.password,
+      roleId: data.roleId,
+      organizationId: data.organizationId,
+      isEmailVerified: true,
+      status: UserStatus.ACTIVE,
+    },
+    include: userWithRole,
+  });
+};
+
 export const findRoleById = (roleId: string) => {
   return prisma.role.findUnique({
     where: { id: roleId },
@@ -125,6 +163,10 @@ const buildWhere = (
   filters: ListUsersFilters,
 ): Prisma.UserWhereInput => {
   const where: Prisma.UserWhereInput = {};
+
+  if (filters.organizationId) {
+    where.organizationId = filters.organizationId;
+  }
 
   if (filters.roleId) {
     where.roleId = filters.roleId;

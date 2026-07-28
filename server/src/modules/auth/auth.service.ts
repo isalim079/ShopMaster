@@ -10,7 +10,13 @@ import {
   hashOtp,
 } from '../../core/security/otp';
 import { sendMail } from '../../core/mail/mail.service';
+import {
+  buildEmailVerificationEmail,
+  buildPasswordChangedEmail,
+  buildPasswordResetEmail,
+} from '../../core/mail/templates';
 import { AppError } from '../../core/errors/app-error';
+import { canSelfManagePassword } from '../../core/constants/roles';
 import { HTTP_STATUS } from '../../core/constants/http-status';
 import { getExpiryDateFromDuration } from '../../core/utils/duration';
 import {
@@ -59,15 +65,17 @@ export const register = async (payload: {
     getOtpExpiry(),
   );
 
+  const verificationEmail = buildEmailVerificationEmail({
+    firstName: user.firstName,
+    otp,
+    expiryMinutes: env.OTP_EXPIRY_MINUTES,
+  });
+
   await sendMail({
     to: user.email,
-    subject: 'Verify your email',
-    html: `
-      <h2>Email Verification</h2>
-      <p>Your verification code is:</p>
-      <h1>${otp}</h1>
-      <p>This code expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
-    `,
+    subject: verificationEmail.subject,
+    html: verificationEmail.html,
+    text: verificationEmail.text,
   });
 
   return {
@@ -295,6 +303,15 @@ export const forgotPassword = async (
     });
   }
 
+  // Managers / employees cannot self-reset — shop admin must reset for them
+  if (!canSelfManagePassword(user.role.slug)) {
+    throw new AppError(
+      'Password reset is managed by your shop admin. Please contact them for help.',
+      HTTP_STATUS.FORBIDDEN,
+      { code: 'PASSWORD_RESET_ADMIN_ONLY' },
+    );
+  }
+
   const otp = generateOtp();
 
   await repository.createPasswordReset(
@@ -303,15 +320,17 @@ export const forgotPassword = async (
     getOtpExpiry(),
   );
 
+  const resetEmail = buildPasswordResetEmail({
+    firstName: user.firstName,
+    otp,
+    expiryMinutes: env.OTP_EXPIRY_MINUTES,
+  });
+
   await sendMail({
     to: user.email,
-    subject: 'Password Reset Code',
-    html: `
-      <h2>Password Reset</h2>
-      <p>Your OTP is:</p>
-      <h1>${otp}</h1>
-      <p>This OTP expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
-    `,
+    subject: resetEmail.subject,
+    html: resetEmail.html,
+    text: resetEmail.text,
   });
 
   return {
@@ -329,6 +348,14 @@ export const verifyResetOtp = async (
     throw new AppError(
       'Invalid email or OTP.',
       HTTP_STATUS.BAD_REQUEST,
+    );
+  }
+
+  if (!canSelfManagePassword(user.role.slug)) {
+    throw new AppError(
+      'Password reset is managed by your shop admin. Please contact them for help.',
+      HTTP_STATUS.FORBIDDEN,
+      { code: 'PASSWORD_RESET_ADMIN_ONLY' },
     );
   }
 
@@ -404,6 +431,14 @@ export const resetPassword = async (
     );
   }
 
+  if (!canSelfManagePassword(user.role.slug)) {
+    throw new AppError(
+      'Password reset is managed by your shop admin. Please contact them for help.',
+      HTTP_STATUS.FORBIDDEN,
+      { code: 'PASSWORD_RESET_ADMIN_ONLY' },
+    );
+  }
+
   const isSamePassword =
     await comparePassword(
       newPassword,
@@ -428,6 +463,18 @@ export const resetPassword = async (
   await repository.revokeAllUserTokens(
     user.id,
   );
+
+  const changedEmail = buildPasswordChangedEmail({
+    firstName: user.firstName,
+    email: user.email,
+  });
+
+  await sendMail({
+    to: user.email,
+    subject: changedEmail.subject,
+    html: changedEmail.html,
+    text: changedEmail.text,
+  });
 
   return {
     message:
@@ -469,15 +516,17 @@ export const resendVerificationOtp = async (
     getOtpExpiry(),
   );
 
+  const verificationEmail = buildEmailVerificationEmail({
+    firstName: user.firstName,
+    otp,
+    expiryMinutes: env.OTP_EXPIRY_MINUTES,
+  });
+
   await sendMail({
     to: user.email,
-    subject: 'Verify Your Email',
-    html: `
-      <h2>Email Verification</h2>
-      <p>Your verification code is:</p>
-      <h1>${otp}</h1>
-      <p>This code expires in ${env.OTP_EXPIRY_MINUTES} minutes.</p>
-    `,
+    subject: verificationEmail.subject,
+    html: verificationEmail.html,
+    text: verificationEmail.text,
   });
 
   return {

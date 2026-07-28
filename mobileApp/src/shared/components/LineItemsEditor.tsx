@@ -23,6 +23,8 @@ type LineItemsEditorProps<T extends FieldValues> = {
   priceLabel: string;
   priceField: 'unitCost' | 'unitPrice';
   setValue?: UseFormSetValue<T>;
+  /** Hide per-line discount when order-level discount is used instead */
+  showLineDiscount?: boolean;
 };
 
 export function LineItemsEditor<T extends FieldValues>({
@@ -31,6 +33,7 @@ export function LineItemsEditor<T extends FieldValues>({
   priceLabel,
   priceField,
   setValue,
+  showLineDiscount = true,
 }: LineItemsEditorProps<T>) {
   const { fields, append, remove } = useFieldArray({
     control,
@@ -156,23 +159,25 @@ export function LineItemsEditor<T extends FieldValues>({
               />
             )}
           />
-          <Controller
-            control={control}
-            name={`${String(name)}.${index}.discount` as Path<T>}
-            render={({
-              field: { onChange, onBlur, value },
-              fieldState: { error },
-            }) => (
-              <TextField
-                label="Discount"
-                value={String(value ?? '')}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                error={error?.message}
-                keyboardType="decimal-pad"
-              />
-            )}
-          />
+          {showLineDiscount ? (
+            <Controller
+              control={control}
+              name={`${String(name)}.${index}.discount` as Path<T>}
+              render={({
+                field: { onChange, onBlur, value },
+                fieldState: { error },
+              }) => (
+                <TextField
+                  label="Discount"
+                  value={String(value ?? '')}
+                  onChangeText={onChange}
+                  onBlur={onBlur}
+                  error={error?.message}
+                  keyboardType="decimal-pad"
+                />
+              )}
+            />
+          ) : null}
           {fields.length > 1 ? (
             <Button
               label="Remove"

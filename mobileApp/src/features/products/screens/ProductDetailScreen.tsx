@@ -68,7 +68,7 @@ export function ProductDetailScreen({ productId }: ProductDetailScreenProps) {
         </View>
 
         <Card className="gap-2">
-          <Row label="SKU" value={data.sku ?? '—'} />
+          <Row label="Stock Keeping Unit" value={data.sku ?? '—'} />
           <Row label="Barcode" value={data.barcode ?? '—'} />
           <Row label="Unit" value={data.unit} />
           <Row label="Purchase" value={formatMoney(data.purchasePrice)} />

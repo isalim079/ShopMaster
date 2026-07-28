@@ -11,6 +11,7 @@ import '@/src/features/brand/api/brandApi';
 import '@/src/features/supplier/api/supplierApi';
 import '@/src/features/customer/api/customerApi';
 import '@/src/features/warehouse/api/warehouseApi';
+import '@/src/features/team/api/teamApi';
 
 export const store = configureStore({
   reducer: {

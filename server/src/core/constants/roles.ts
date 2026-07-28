@@ -7,6 +7,24 @@ export const ROLE_SLUG = {
 
 export type RoleSlug = (typeof ROLE_SLUG)[keyof typeof ROLE_SLUG];
 
+/** Shop owner / admin may self-serve password reset & change. */
+export const canSelfManagePassword = (roleSlug: string): boolean =>
+  roleSlug === ROLE_SLUG.ADMIN || roleSlug === ROLE_SLUG.SUPER_ADMIN;
+
+/** Roles an org admin may assign when adding team members. */
+export const TEAM_ASSIGNABLE_ROLES = [
+  ROLE_SLUG.MANAGER,
+  ROLE_SLUG.EMPLOYEE,
+] as const;
+
+export type TeamAssignableRole =
+  (typeof TEAM_ASSIGNABLE_ROLES)[number];
+
+export const isTeamAssignableRole = (
+  slug: string,
+): slug is TeamAssignableRole =>
+  (TEAM_ASSIGNABLE_ROLES as readonly string[]).includes(slug);
+
 export const SYSTEM_ROLES = [
   {
     name: 'Super Admin',
@@ -17,7 +35,7 @@ export const SYSTEM_ROLES = [
   {
     name: 'Admin',
     slug: ROLE_SLUG.ADMIN,
-    description: 'Administrative access',
+    description: 'Shop owner / administrative access',
     isSystem: true,
   },
   {

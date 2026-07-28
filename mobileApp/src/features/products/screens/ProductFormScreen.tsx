@@ -165,7 +165,7 @@ export function ProductFormScreen({ productId }: ProductFormScreenProps) {
           name="sku"
           render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
             <TextField
-              label="SKU"
+              label="Stock Keeping Unit"
               value={value ?? ''}
               onChangeText={onChange}
               onBlur={onBlur}

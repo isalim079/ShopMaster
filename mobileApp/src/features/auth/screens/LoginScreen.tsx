@@ -17,14 +17,17 @@ import {
   TextField,
   AppText,
   KeyboardAwareScrollScreen,
+  useToast,
 } from '@/src/shared/components/ui';
 import { useAppDispatch } from '@/src/store/hooks';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { isStaffRole, staffLoginToastMessage } from '@/src/shared/lib/roles';
 import { showErrorModal } from '@/src/shared/utils/modal';
 import { colors } from '@/src/theme/tokens';
 
 export function LoginScreen() {
   const dispatch = useAppDispatch();
+  const { showToast } = useToast();
   const [login, { isLoading }] = useLoginMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -43,6 +46,15 @@ export function LoginScreen() {
       }
       await setTokens(result.tokens);
       dispatch(setSession(result.user));
+
+      if (isStaffRole(result.user.role?.slug)) {
+        showToast({
+          message: staffLoginToastMessage(result.user.role?.name),
+          variant: 'info',
+          durationMs: 4500,
+        });
+      }
+
       router.replace('/(app)/(tabs)');
     } catch (error) {
       const message = getErrorMessage(

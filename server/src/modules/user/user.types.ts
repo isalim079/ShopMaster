@@ -20,6 +20,7 @@ export interface UserResponse {
 }
 
 export interface ListUsersFilters {
+  organizationId?: string;
   search?: string;
   roleId?: string;
   roleSlug?: string;

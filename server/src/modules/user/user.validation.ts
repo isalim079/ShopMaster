@@ -30,6 +30,17 @@ export const changePasswordSchema = z.object({
   }),
 });
 
+export const createTeamMemberSchema = z.object({
+  body: z.object({
+    firstName: z.string().trim().min(2).max(50),
+    lastName: z.string().trim().max(50).optional(),
+    email: z.string().trim().email().toLowerCase(),
+    phone: z.string().trim().optional(),
+    password: passwordSchema,
+    roleSlug: z.enum(['MANAGER', 'EMPLOYEE']),
+  }),
+});
+
 export const listUsersSchema = z.object({
   query: z.object({
     page: z.coerce
@@ -82,6 +93,10 @@ export type UpdateProfileInput = z.infer<
 
 export type ChangePasswordInput = z.infer<
   typeof changePasswordSchema
+>['body'];
+
+export type CreateTeamMemberInput = z.infer<
+  typeof createTeamMemberSchema
 >['body'];
 
 export type ListUsersQuery = z.infer<

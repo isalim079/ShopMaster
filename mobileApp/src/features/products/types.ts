@@ -16,6 +16,7 @@ export type Product = {
   reorderLevel: number | null;
   imageUrl: string | null;
   status: CatalogStatus;
+  totalStock?: number;
   createdAt: string;
   updatedAt: string;
 };

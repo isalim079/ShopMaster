@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import { env } from '../config/env';
 import { AppError } from '../errors/app-error';
 import { HTTP_STATUS } from '../constants/http-status';
+import { logger } from '../logger/logger';
 
 const createTransporter = () => {
   if (!env.SMTP_HOST || !env.SMTP_USER || !env.SMTP_PASS) {
@@ -26,12 +27,15 @@ interface SendMailOptions {
   to: string;
   subject: string;
   html: string;
+  /** Plain-text fallback — improves deliverability */
+  text?: string;
 }
 
 export const sendMail = async ({
   to,
   subject,
   html,
+  text,
 }: SendMailOptions): Promise<void> => {
   if (!transporter) {
     if (env.NODE_ENV === 'production') {
@@ -41,6 +45,10 @@ export const sendMail = async ({
       );
     }
 
+    logger.info(
+      { to, subject },
+      'SMTP not configured — email skipped (dev)',
+    );
     return;
   }
 
@@ -53,5 +61,6 @@ export const sendMail = async ({
     to,
     subject,
     html,
+    text,
   });
 };

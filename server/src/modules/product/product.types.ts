@@ -16,12 +16,12 @@ export interface ProductResponse {
   reorderLevel: number | null;
   imageUrl: string | null;
   status: CatalogStatus;
+  totalStock: number;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface ProductDetailResponse extends ProductResponse {
-  totalStock: number;
   stocks?: StockByWarehouse[];
 }
 

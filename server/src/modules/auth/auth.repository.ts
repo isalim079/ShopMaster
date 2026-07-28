@@ -21,13 +21,13 @@ export const createUser = async (data: {
   password: string;
   organizationName: string;
 }) => {
-  const employeeRole = await prisma.role.findUnique({
-    where: { slug: ROLE_SLUG.EMPLOYEE },
+  const adminRole = await prisma.role.findUnique({
+    where: { slug: ROLE_SLUG.ADMIN },
   });
 
-  if (!employeeRole) {
+  if (!adminRole) {
     throw new AppError(
-      'Default employee role is not configured.',
+      'Default shop admin role is not configured.',
       HTTP_STATUS.INTERNAL_SERVER_ERROR,
     );
   }
@@ -70,7 +70,7 @@ export const createUser = async (data: {
     return tx.user.create({
       data: {
         ...userData,
-        roleId: employeeRole.id,
+        roleId: adminRole.id,
         organizationId: organization.id,
       },
       include: userWithRole,

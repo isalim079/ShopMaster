@@ -85,7 +85,7 @@ export function ProductListScreen() {
         <SearchField
           value={search}
           onChangeText={setSearch}
-          placeholder="Search name, SKU, barcode"
+          placeholder="Search name, stock keeping unit, barcode"
         />
         <ChipSelect
           options={[
@@ -125,6 +125,11 @@ export function ProductListScreen() {
 }
 
 function ProductRow({ product }: { product: Product }) {
+  const stockQty = product.totalStock ?? 0;
+  const skuLabel = product.sku
+    ? `Stock Keeping Unit · ${product.sku}`
+    : 'No stock keeping unit';
+
   return (
     <Pressable
       onPress={() => router.push(`/(app)/products/${product.id}`)}
@@ -138,11 +143,19 @@ function ProductRow({ product }: { product: Product }) {
           <AppText variant="caption">{product.status}</AppText>
         </View>
         <AppText variant="caption">
-          {[product.sku, product.barcode].filter(Boolean).join(' · ') || 'No SKU'}
+          {product.barcode
+            ? `${skuLabel} · Barcode ${product.barcode}`
+            : skuLabel}
         </AppText>
         <View className="mt-1 flex-row justify-between">
           <AppText variant="body">Buy {formatMoney(product.purchasePrice)}</AppText>
           <AppText variant="body">Sell {formatMoney(product.salePrice)}</AppText>
+        </View>
+        <View className="mt-1 flex-row items-center justify-between">
+          <AppText variant="caption">Quantity in stock</AppText>
+          <AppText variant="body" className="font-sans-semibold text-primary">
+            {stockQty} {product.unit}
+          </AppText>
         </View>
       </Card>
     </Pressable>

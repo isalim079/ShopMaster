@@ -18,12 +18,14 @@ type ProductSelectProps = {
 };
 
 function toOption(product: Product): SearchableOption {
-  const sku = product.sku ? `SKU ${product.sku}` : null;
+  const sku = product.sku ? `Stock Keeping Unit ${product.sku}` : null;
   return {
     id: product.id,
     label: product.name,
     subtitle: [sku, `ID ${product.id.slice(0, 8)}…`].filter(Boolean).join(' · '),
-    meta: `Sale ${product.salePrice} · Buy ${product.purchasePrice}`,
+    meta: `Sale ${product.salePrice} · Buy ${product.purchasePrice}${
+      product.totalStock != null ? ` · Qty ${product.totalStock}` : ''
+    }`,
   };
 }
 
@@ -68,8 +70,8 @@ export function ProductSelect({
       options={options}
       error={error}
       loading={isFetching}
-      placeholder="Search product by name, SKU, or ID"
-      searchPlaceholder="Name, SKU, barcode, or ID"
+      placeholder="Search product by name, stock keeping unit, or ID"
+      searchPlaceholder="Name, stock keeping unit, barcode, or ID"
       emptyLabel="No products match"
       onSearchChange={setSearch}
       onChange={(id) => {

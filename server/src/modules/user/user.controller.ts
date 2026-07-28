@@ -41,6 +41,7 @@ export const changePassword = asyncHandler(
     const result = await userService.changePassword(
       req.user!.id,
       req.body,
+      req.user!.role,
     );
 
     res.clearCookie('accessToken', clearCookieOptions);
@@ -58,6 +59,8 @@ export const getUsers = asyncHandler(
   async (req: Request, res: Response) => {
     const result = await userService.getUsers(
       req.query as unknown as ListUsersQuery,
+      req.user!.organizationId,
+      req.user!.role,
     );
 
     return apiResponse({
@@ -66,6 +69,26 @@ export const getUsers = asyncHandler(
       message: 'Users fetched successfully.',
       data: result.users,
       meta: result.meta,
+    });
+  },
+);
+
+export const createTeamMember = asyncHandler(
+  async (req: Request, res: Response) => {
+    const result = await userService.createTeamMember(
+      {
+        id: req.user!.id,
+        organizationId: req.user!.organizationId,
+        role: req.user!.role,
+      },
+      req.body,
+    );
+
+    return apiResponse({
+      res,
+      statusCode: HTTP_STATUS.CREATED,
+      message: 'Team member created successfully.',
+      data: result,
     });
   },
 );

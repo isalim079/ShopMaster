@@ -9,6 +9,7 @@ import {
 import { validate } from '../../core/middleware/validate.middleware';
 import {
   changePasswordSchema,
+  createTeamMemberSchema,
   listUsersSchema,
   updateProfileSchema,
   updateUserRoleSchema,
@@ -36,6 +37,7 @@ router.patch(
 router.patch(
   '/me/change-password',
   authenticate,
+  authorize(ROLE_SLUG.SUPER_ADMIN, ROLE_SLUG.ADMIN),
   validate(changePasswordSchema),
   userController.changePassword,
 );
@@ -47,6 +49,15 @@ router.get(
   requirePermission(PERMISSION_SLUG.USERS_READ),
   validate(listUsersSchema),
   userController.getUsers,
+);
+
+router.post(
+  '/',
+  authenticate,
+  authorize(ROLE_SLUG.SUPER_ADMIN, ROLE_SLUG.ADMIN),
+  requirePermission(PERMISSION_SLUG.USERS_WRITE),
+  validate(createTeamMemberSchema),
+  userController.createTeamMember,
 );
 
 router.patch(

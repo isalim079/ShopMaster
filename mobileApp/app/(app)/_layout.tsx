@@ -32,6 +32,7 @@ export default function AppLayout() {
       <Stack.Screen name="notifications" options={{ headerShown: false }} />
       <Stack.Screen name="settings" options={{ headerShown: false }} />
       <Stack.Screen name="profile" options={{ headerShown: false }} />
+      <Stack.Screen name="employees" options={{ headerShown: false }} />
     </Stack>
   );
 }

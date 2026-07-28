@@ -1,11 +1,16 @@
 import { useMemo } from 'react';
-import { Appearance, useColorScheme } from 'react-native';
+import { Appearance } from 'react-native';
+import { useColorScheme as useNativeWindColorScheme } from 'nativewind';
 
 import { useAppSelector } from '@/src/store/hooks';
 import { colors } from '@/src/theme/tokens';
 
 export type ResolvedTheme = 'light' | 'dark';
 
+/**
+ * Resolved app theme for navigation chrome + imperative styles.
+ * Body `dark:` classes come from NativeWind setColorScheme in ThemeProvider.
+ */
 export function useResolvedTheme(): {
   preference: 'light' | 'dark' | 'system';
   resolved: ResolvedTheme;
@@ -13,11 +18,11 @@ export function useResolvedTheme(): {
   palette: (typeof colors)['light'] | (typeof colors)['dark'];
 } {
   const preference = useAppSelector((s) => s.theme.preference);
-  const systemScheme = useColorScheme();
+  const { colorScheme } = useNativeWindColorScheme();
 
   return useMemo(() => {
     const system: ResolvedTheme =
-      (systemScheme ?? Appearance.getColorScheme()) === 'dark'
+      (colorScheme ?? Appearance.getColorScheme()) === 'dark'
         ? 'dark'
         : 'light';
     const resolved: ResolvedTheme =
@@ -29,5 +34,5 @@ export function useResolvedTheme(): {
       isDark,
       palette: isDark ? colors.dark : colors.light,
     };
-  }, [preference, systemScheme]);
+  }, [preference, colorScheme]);
 }

@@ -110,7 +110,7 @@ function InventoryRow({ row }: { row: InventoryReportRow }) {
         <AppText variant="title">{formatCurrency(row.value)}</AppText>
       </View>
       <AppText variant="caption">
-        SKU {row.sku} · {row.warehouseName}
+        Stock Keeping Unit {row.sku} · {row.warehouseName}
       </AppText>
       <AppText variant="caption">
         Qty {row.quantity} · unit {formatCurrency(row.unitCost)}

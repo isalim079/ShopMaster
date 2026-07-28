@@ -3,6 +3,8 @@ import { router } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { AppText, Card } from '@/src/shared/components/ui';
+import { isShopAdmin } from '@/src/shared/lib/roles';
+import { useAppSelector } from '@/src/store/hooks';
 
 type MoreIcon = React.ComponentProps<typeof MaterialCommunityIcons>['name'];
 
@@ -11,7 +13,15 @@ const LINKS: {
   description: string;
   href: string;
   icon: MoreIcon;
+  adminOnly?: boolean;
 }[] = [
+  {
+    title: 'Add employee',
+    description: 'Create manager or employee accounts',
+    href: '/(app)/employees/create',
+    icon: 'account-plus-outline',
+    adminOnly: true,
+  },
   {
     title: 'Customers',
     description: 'Customer directory',
@@ -117,6 +127,10 @@ const LINKS: {
 ];
 
 export default function MoreTab() {
+  const roleSlug = useAppSelector((s) => s.auth.user?.role.slug);
+  const admin = isShopAdmin(roleSlug);
+  const links = LINKS.filter((link) => !link.adminOnly || admin);
+
   return (
     <ScrollView className="flex-1 bg-background dark:bg-background-dark">
       <View className="gap-3 px-4 py-6">
@@ -125,7 +139,7 @@ export default function MoreTab() {
           Catalog, trading, reports, and account screens.
         </AppText>
 
-        {LINKS.map((link) => (
+        {links.map((link) => (
           <Pressable
             key={link.href}
             onPress={() => router.push(link.href as never)}

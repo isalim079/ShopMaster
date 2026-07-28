@@ -1,29 +1,47 @@
-import { Product } from '@prisma/client';
+import { Product, type InventoryStock } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 
 import type { ProductResponse } from './product.types';
 
-export const toProductResponse = (product: Product): ProductResponse => ({
-  id: product.id,
-  organizationId: product.organizationId,
-  name: product.name,
-  sku: product.sku,
-  barcode: product.barcode,
-  description: product.description,
-  categoryId: product.categoryId,
-  brandId: product.brandId,
-  unit: product.unit,
-  purchasePrice: decimalToNumber(product.purchasePrice),
-  salePrice: decimalToNumber(product.salePrice),
-  taxRate: decimalToNumber(product.taxRate),
-  reorderLevel: product.reorderLevel ? decimalToNumber(product.reorderLevel) : null,
-  imageUrl: product.imageUrl,
-  status: product.status,
-  createdAt: product.createdAt,
-  updatedAt: product.updatedAt,
-});
+type ProductWithStockQty = Product & {
+  stocks?: Array<Pick<InventoryStock, 'quantity'>>;
+};
 
-export const toProductListResponse = (products: Product[]): ProductResponse[] => {
+export const toProductResponse = (
+  product: ProductWithStockQty,
+): ProductResponse => {
+  const totalStock = (product.stocks ?? []).reduce(
+    (sum, stock) => sum + decimalToNumber(stock.quantity),
+    0,
+  );
+
+  return {
+    id: product.id,
+    organizationId: product.organizationId,
+    name: product.name,
+    sku: product.sku,
+    barcode: product.barcode,
+    description: product.description,
+    categoryId: product.categoryId,
+    brandId: product.brandId,
+    unit: product.unit,
+    purchasePrice: decimalToNumber(product.purchasePrice),
+    salePrice: decimalToNumber(product.salePrice),
+    taxRate: decimalToNumber(product.taxRate),
+    reorderLevel: product.reorderLevel
+      ? decimalToNumber(product.reorderLevel)
+      : null,
+    imageUrl: product.imageUrl,
+    status: product.status,
+    totalStock,
+    createdAt: product.createdAt,
+    updatedAt: product.updatedAt,
+  };
+};
+
+export const toProductListResponse = (
+  products: ProductWithStockQty[],
+): ProductResponse[] => {
   return products.map(toProductResponse);
 };
 

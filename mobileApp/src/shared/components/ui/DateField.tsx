@@ -5,9 +5,7 @@ import {
   Pressable,
   View,
 } from 'react-native';
-import DateTimePicker, {
-  type DateTimePickerEvent,
-} from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { AppText } from './Text';
@@ -75,15 +73,17 @@ export function DateField({
     }
   }, [open, value]);
 
-  const onNativeChange = (event: DateTimePickerEvent, date?: Date) => {
+  const onValueChange = (_event: unknown, date: Date) => {
     if (Platform.OS === 'android') {
       setOpen(false);
-      if (event.type === 'set' && date) {
-        onChange(toIsoDate(date));
-      }
+      onChange(toIsoDate(date));
       return;
     }
-    if (date) setDraft(date);
+    setDraft(date);
+  };
+
+  const onDismiss = () => {
+    setOpen(false);
   };
 
   const confirmIos = () => {
@@ -151,7 +151,8 @@ export function DateField({
           value={selected}
           mode="date"
           display="calendar"
-          onChange={onNativeChange}
+          onValueChange={onValueChange}
+          onDismiss={onDismiss}
           minimumDate={minimumDate}
           maximumDate={maximumDate}
         />
@@ -182,7 +183,7 @@ export function DateField({
                 value={draft}
                 mode="date"
                 display="inline"
-                onChange={onNativeChange}
+                onValueChange={onValueChange}
                 minimumDate={minimumDate}
                 maximumDate={maximumDate}
                 themeVariant={isDark ? 'dark' : 'light'}

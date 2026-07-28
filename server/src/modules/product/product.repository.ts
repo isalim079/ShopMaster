@@ -37,6 +37,9 @@ export const findMany = (
       skip,
       take,
       orderBy: { createdAt: 'desc' },
+      include: {
+        stocks: { select: { quantity: true } },
+      },
     }),
     prisma.product.count({ where }),
   ]);

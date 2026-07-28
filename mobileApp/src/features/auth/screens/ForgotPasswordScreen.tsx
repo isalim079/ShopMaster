@@ -15,6 +15,7 @@ import {
   Button,
   KeyboardAwareScrollScreen,
   TextField,
+  useToast,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
 import {
@@ -35,7 +36,18 @@ function isUserNotFound(error: unknown): boolean {
   return message.includes('user not found');
 }
 
+function isAdminOnlyPasswordReset(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+  const err = error as {
+    data?: { details?: { code?: string }; message?: string };
+  };
+  if (err.data?.details?.code === 'PASSWORD_RESET_ADMIN_ONLY') return true;
+  const message = err.data?.message?.toLowerCase() ?? '';
+  return message.includes('shop admin');
+}
+
 export function ForgotPasswordScreen() {
+  const { showToast } = useToast();
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -61,8 +73,16 @@ export function ForgotPasswordScreen() {
       ]);
     } catch (error) {
       if (isUserNotFound(error)) {
-        const message = 'User not found.';
-        showErrorModal('User not found', message);
+        showErrorModal('User not found', 'User not found.');
+        return;
+      }
+      if (isAdminOnlyPasswordReset(error)) {
+        const message = getErrorMessage(
+          error,
+          'Password reset is managed by your shop admin. Please contact them for help.',
+        );
+        showToast({ message, variant: 'info', durationMs: 5000 });
+        showErrorModal('Contact shop admin', message);
         return;
       }
       setFormError(

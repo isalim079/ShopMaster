@@ -1,15 +1,10 @@
 import { Stack } from 'expo-router';
 
+import { authStackScreenOptions } from '@/src/navigation/stackOptions';
+
 export default function AuthLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        animation: 'fade',
-        animationDuration: 200,
-        contentStyle: { backgroundColor: '#F8FAFC' },
-      }}
-    >
+    <Stack screenOptions={authStackScreenOptions}>
       <Stack.Screen name="login" />
       <Stack.Screen name="register" />
       <Stack.Screen name="verify-email" />

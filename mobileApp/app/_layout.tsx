@@ -7,13 +7,14 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Provider } from 'react-redux';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 import 'react-native-reanimated';
 
 import { useAuthBootstrap } from '@/src/features/auth/hooks/useAuthBootstrap';
+import { slideTransitionOptions } from '@/src/navigation/stackOptions';
 import { store } from '@/src/store';
 import { ThemeProvider } from '@/src/theme/ThemeProvider';
 import { LoadingState } from '@/src/shared/components/ui/ScreenStates';
+import { AppModalProvider } from '@/src/shared/components/ui/AppModal';
 import { ToastProvider } from '@/src/shared/components/ui/Toast';
 import { useAppSelector } from '@/src/store/hooks';
 
@@ -57,13 +58,18 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <KeyboardProvider preload={false}>
-          <Provider store={store}>
-            <ThemeProvider>
-              <ToastProvider>
+        <Provider store={store}>
+          <ThemeProvider>
+            <ToastProvider>
+              <AppModalProvider>
                 <View style={{ flex: 1 }}>
                   <BootstrapGate>
-                    <Stack screenOptions={{ headerShown: false }}>
+                    <Stack
+                      screenOptions={{
+                        ...slideTransitionOptions,
+                        headerShown: false,
+                      }}
+                    >
                       <Stack.Screen name="index" />
                       <Stack.Screen name="(auth)" />
                       <Stack.Screen name="(app)" />
@@ -71,10 +77,10 @@ export default function RootLayout() {
                     </Stack>
                   </BootstrapGate>
                 </View>
-              </ToastProvider>
-            </ThemeProvider>
-          </Provider>
-        </KeyboardProvider>
+              </AppModalProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </Provider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

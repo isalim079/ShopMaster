@@ -1,4 +1,4 @@
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 
 import {
@@ -15,6 +15,7 @@ import {
   LoadingState,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { formatDate, formatMoney } from '@/src/shared/lib/format';
 
 export function SaleDetailScreen({ saleId }: { saleId: string }) {
@@ -108,7 +109,7 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
                   await completeSale(saleId).unwrap();
                   refetch();
                 } catch (err) {
-                  Alert.alert('Complete failed', getErrorMessage(err));
+                  showErrorModal('Complete failed', getErrorMessage(err));
                 }
               }}
             />
@@ -121,21 +122,20 @@ export function SaleDetailScreen({ saleId }: { saleId: string }) {
             variant="danger"
             loading={cancelling}
             onPress={() => {
-              Alert.alert('Cancel sale?', undefined, [
-                { text: 'Keep', style: 'cancel' },
-                {
-                  text: 'Cancel',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      await cancelSale(saleId).unwrap();
-                      refetch();
-                    } catch (err) {
-                      Alert.alert('Failed', getErrorMessage(err));
-                    }
-                  },
+              showConfirmModal({
+                title: 'Cancel sale?',
+                confirmText: 'Cancel',
+                cancelText: 'Keep',
+                destructive: true,
+                onConfirm: async () => {
+                  try {
+                    await cancelSale(saleId).unwrap();
+                    refetch();
+                  } catch (err) {
+                    showErrorModal('Failed', getErrorMessage(err));
+                  }
                 },
-              ]);
+              });
             }}
           />
         ) : null}

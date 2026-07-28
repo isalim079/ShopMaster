@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,6 +27,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { emptyToUndefined } from '@/src/shared/utils/format';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { cn } from '@/src/theme/cn';
 
 type Props = {
@@ -104,34 +104,29 @@ export function SupplierFormScreen({ supplierId }: Props) {
         (error as { data?: { message?: string } })?.data?.message ??
         'Unable to save supplier';
       setFormError(message);
-      Alert.alert('Save failed', message);
+      showErrorModal('Save failed', message);
     }
   });
 
   const onDelete = () => {
     if (!supplierId) return;
-    Alert.alert(
-      'Delete supplier',
-      'This will soft-delete the supplier. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteSupplier(supplierId).unwrap();
-              router.back();
-            } catch (error) {
-              const message =
-                (error as { data?: { message?: string } })?.data?.message ??
-                'Unable to delete supplier';
-              Alert.alert('Delete failed', message);
-            }
-          },
-        },
-      ],
-    );
+    showConfirmModal({
+      title: 'Delete supplier',
+      message: 'This will soft-delete the supplier. Continue?',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteSupplier(supplierId).unwrap();
+          router.back();
+        } catch (error) {
+          const message =
+            (error as { data?: { message?: string } })?.data?.message ??
+            'Unable to delete supplier';
+          showErrorModal('Delete failed', message);
+        }
+      },
+    });
   };
 
   if (isEdit && isLoading) {

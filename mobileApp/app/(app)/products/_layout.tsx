@@ -1,13 +1,10 @@
 import { Stack } from 'expo-router';
 
+import { moduleStackScreenOptionsMinimal } from '@/src/navigation/stackOptions';
+
 export default function ProductsLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerTintColor: '#059669',
-      }}
-    >
+    <Stack screenOptions={moduleStackScreenOptionsMinimal}>
       <Stack.Screen name="index" options={{ title: 'Products' }} />
       <Stack.Screen name="create" options={{ title: 'New product' }} />
       <Stack.Screen name="[id]" options={{ title: 'Product' }} />

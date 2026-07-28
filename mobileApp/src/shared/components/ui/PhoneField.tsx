@@ -23,6 +23,8 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { useFormKeyboardScroll } from '@/src/shared/components/ui/KeyboardAwareScrollScreen';
+import { scrollFocusedInputIntoView } from '@/src/shared/lib/scrollInputIntoView';
 import { cn } from '@/src/theme/cn';
 import { colors } from '@/src/theme/tokens';
 
@@ -74,6 +76,7 @@ export function PhoneField({
   error,
   optional = true,
 }: PhoneFieldProps) {
+  const formScroll = useFormKeyboardScroll();
   const [pickerOpen, setPickerOpen] = useState(false);
   const [focused, setFocused] = useState(false);
   const [callingCode, setCallingCode] = useState(() => dialCodeFor(countryCode));
@@ -181,7 +184,15 @@ export function PhoneField({
           autoComplete="tel"
           placeholder="Mobile number"
           placeholderTextColor="#94A3B8"
-          onFocus={() => setFocused(true)}
+          onFocus={(e) => {
+            setFocused(true);
+            if (formScroll) {
+              scrollFocusedInputIntoView(e, formScroll.scrollRef, {
+                scrollY: formScroll.scrollY.current,
+                keyboardHeight: formScroll.keyboardHeight,
+              });
+            }
+          }}
           onBlur={() => setFocused(false)}
         />
       </View>

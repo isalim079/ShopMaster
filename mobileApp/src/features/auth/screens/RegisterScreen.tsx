@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Link, router } from 'expo-router';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,6 +18,7 @@ import {
   PhoneField,
   TextField,
 } from '@/src/shared/components/ui';
+import { showSuccessModal } from '@/src/shared/utils/modal';
 import { getErrorMessage } from '@/src/shared/lib/errors';
 import { colors } from '@/src/theme/tokens';
 
@@ -56,9 +57,9 @@ export function RegisterScreen() {
         organizationName: values.organizationName,
       }).unwrap();
 
-      Alert.alert('Check your email', result.message, [
+      showSuccessModal('Check your email', result.message, [
         {
-          text: 'Verify',
+          text: 'Verify email',
           onPress: () =>
             router.push({
               pathname: '/(auth)/verify-email',
@@ -73,6 +74,7 @@ export function RegisterScreen() {
 
   return (
     <KeyboardAwareScrollScreen>
+      {/* Back navigation */}
       <Link href="/(auth)/login" asChild>
         <Pressable
           accessibilityRole="button"
@@ -88,6 +90,7 @@ export function RegisterScreen() {
         </Pressable>
       </Link>
 
+      {/* Screen header */}
       <View className="mb-6 flex-row items-center gap-4">
         <View className="h-14 w-14 items-center justify-center rounded-full bg-primary-container">
           <MaterialCommunityIcons
@@ -104,6 +107,7 @@ export function RegisterScreen() {
         </View>
       </View>
 
+      {/* Registration form */}
       <View className="gap-4 rounded-lg border border-border bg-surface p-5 dark:border-border-dark dark:bg-surface-dark">
         <Controller
           control={control}
@@ -234,6 +238,7 @@ export function RegisterScreen() {
           )}
         />
 
+        {/* Form error message */}
         {formError ? (
           <View className="flex-row items-start gap-2 rounded-md bg-danger/10 px-3 py-2.5">
             <MaterialCommunityIcons
@@ -247,6 +252,7 @@ export function RegisterScreen() {
           </View>
         ) : null}
 
+        {/* Primary action button */}
         <Button
           label="Register"
           icon="check-circle-outline"
@@ -256,6 +262,7 @@ export function RegisterScreen() {
         />
       </View>
 
+      {/* Footer link */}
       <View className="mt-5 flex-row flex-wrap items-center justify-center gap-x-1 pb-2">
         <AppText variant="caption">Already have an account?</AppText>
         <Link href="/login" asChild>

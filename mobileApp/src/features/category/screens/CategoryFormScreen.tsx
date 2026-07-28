@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,6 +27,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { emptyToUndefined } from '@/src/shared/utils/format';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { cn } from '@/src/theme/cn';
 
 type Props = {
@@ -89,34 +89,29 @@ export function CategoryFormScreen({ categoryId }: Props) {
         (error as { data?: { message?: string } })?.data?.message ??
         'Unable to save category';
       setFormError(message);
-      Alert.alert('Save failed', message);
+      showErrorModal('Save failed', message);
     }
   });
 
   const onDelete = () => {
     if (!categoryId) return;
-    Alert.alert(
-      'Delete category',
-      'This will soft-delete the category. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteCategory(categoryId).unwrap();
-              router.back();
-            } catch (error) {
-              const message =
-                (error as { data?: { message?: string } })?.data?.message ??
-                'Unable to delete category';
-              Alert.alert('Delete failed', message);
-            }
-          },
-        },
-      ],
-    );
+    showConfirmModal({
+      title: 'Delete category',
+      message: 'This will soft-delete the category. Continue?',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteCategory(categoryId).unwrap();
+          router.back();
+        } catch (error) {
+          const message =
+            (error as { data?: { message?: string } })?.data?.message ??
+            'Unable to delete category';
+          showErrorModal('Delete failed', message);
+        }
+      },
+    });
   };
 
   if (isEdit && isLoading) {

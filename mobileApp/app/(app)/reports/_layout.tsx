@@ -1,15 +1,10 @@
 import { Stack } from 'expo-router';
 
+import { moduleStackScreenOptions } from '@/src/navigation/stackOptions';
+
 export default function ReportsLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerTintColor: '#059669',
-        headerTitleStyle: { fontWeight: '600', color: '#0F172A' },
-        headerStyle: { backgroundColor: '#FFFFFF' },
-        contentStyle: { backgroundColor: '#F8FAFC' },
-      }}
-    >
+    <Stack screenOptions={moduleStackScreenOptions}>
       <Stack.Screen name="index" options={{ title: 'Reports' }} />
       <Stack.Screen name="sales" options={{ title: 'Sales report' }} />
       <Stack.Screen name="purchases" options={{ title: 'Purchases report' }} />

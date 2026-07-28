@@ -20,6 +20,10 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import {
+  showErrorModal,
+  showSuccessModal,
+} from '@/src/shared/utils/modal';
 import { colors } from '@/src/theme/tokens';
 
 export function VerifyResetOtpScreen() {
@@ -74,17 +78,24 @@ export function VerifyResetOtpScreen() {
     setFormError(null);
     try {
       await resend({ email }).unwrap();
-      setInfo('A new reset code was sent to your email.');
+      showSuccessModal(
+        'Code sent',
+        'A new reset code was sent to your email.',
+      );
     } catch (error) {
       if (
         (error as { status?: number })?.status === 404 ||
         (error as { data?: { details?: { code?: string } } })?.data?.details
           ?.code === 'USER_NOT_FOUND'
       ) {
-        setFormError('User not found.');
+        const message = 'User not found.';
+        setFormError(message);
+        showErrorModal('User not found', message);
         return;
       }
-      setFormError(getErrorMessage(error, 'Could not resend code.'));
+      const message = getErrorMessage(error, 'Could not resend code.');
+      setFormError(message);
+      showErrorModal('Resend failed', message);
     }
   };
 

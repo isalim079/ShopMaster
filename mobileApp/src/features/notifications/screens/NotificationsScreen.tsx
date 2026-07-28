@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 
 import {
@@ -19,6 +19,7 @@ import {
   LoadingState,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { formatDate } from '@/src/shared/utils/format';
 import { cn } from '@/src/theme/cn';
 
@@ -74,7 +75,7 @@ export function NotificationsScreen() {
               try {
                 await markAllRead().unwrap();
               } catch (err) {
-                Alert.alert('Error', getErrorMessage(err));
+                showErrorModal('Error', getErrorMessage(err));
               }
             }}
           />
@@ -120,28 +121,23 @@ export function NotificationsScreen() {
               try {
                 await markRead(item.id).unwrap();
               } catch (err) {
-                Alert.alert('Error', getErrorMessage(err));
+                showErrorModal('Error', getErrorMessage(err));
               }
             }}
             onDelete={() => {
-              Alert.alert(
-                'Delete notification',
-                'Remove this notification?',
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Delete',
-                    style: 'destructive',
-                    onPress: async () => {
-                      try {
-                        await remove(item.id).unwrap();
-                      } catch (err) {
-                        Alert.alert('Error', getErrorMessage(err));
-                      }
-                    },
-                  },
-                ],
-              );
+              showConfirmModal({
+                title: 'Delete notification',
+                message: 'Remove this notification?',
+                confirmText: 'Delete',
+                destructive: true,
+                onConfirm: async () => {
+                  try {
+                    await remove(item.id).unwrap();
+                  } catch (err) {
+                    showErrorModal('Error', getErrorMessage(err));
+                  }
+                },
+              });
             }}
           />
         )}

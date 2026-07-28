@@ -15,9 +15,12 @@ import {
   Button,
   KeyboardAwareScrollScreen,
   TextField,
-  useToast,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import {
+  showErrorModal,
+  showSuccessModal,
+} from '@/src/shared/utils/modal';
 import { colors } from '@/src/theme/tokens';
 
 function isUserNotFound(error: unknown): boolean {
@@ -33,7 +36,6 @@ function isUserNotFound(error: unknown): boolean {
 }
 
 export function ForgotPasswordScreen() {
-  const { showToast } = useToast();
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -47,20 +49,20 @@ export function ForgotPasswordScreen() {
     const email = values.email.trim().toLowerCase();
     try {
       const result = await forgotPassword({ email }).unwrap();
-      showToast({
-        message: result.message || 'Password reset code sent to your email.',
-        variant: 'success',
-      });
-      router.push({
-        pathname: '/verify-reset-otp',
-        params: { email },
-      });
+      showSuccessModal('Check your email', result.message || 'Password reset code sent.', [
+        {
+          text: 'Enter code',
+          onPress: () =>
+            router.push({
+              pathname: '/verify-reset-otp',
+              params: { email },
+            }),
+        },
+      ]);
     } catch (error) {
       if (isUserNotFound(error)) {
-        showToast({
-          message: 'User not found.',
-          variant: 'error',
-        });
+        const message = 'User not found.';
+        showErrorModal('User not found', message);
         return;
       }
       setFormError(

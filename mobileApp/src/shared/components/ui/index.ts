@@ -9,5 +9,13 @@ export { IdPicker } from './IdPicker';
 export { KeyboardAwareScrollScreen } from './KeyboardAwareScrollScreen';
 export { PhoneField, toE164 } from './PhoneField';
 export { ToastProvider, useToast } from './Toast';
+export { AppModalProvider, useAppModal } from './AppModal';
+export {
+  showAppModal,
+  showConfirmModal,
+  showSuccessModal,
+  showErrorModal,
+  hideAppModal,
+} from '@/src/shared/utils/modal';
 export type { PickerOption } from './IdPicker';
 export type { PhoneFieldProps } from './PhoneField';

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -29,6 +28,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { emptyToUndefined } from '@/src/shared/utils/format';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { cn } from '@/src/theme/cn';
 
 type Props = {
@@ -99,34 +99,29 @@ export function WarehouseFormScreen({ warehouseId }: Props) {
         (error as { data?: { message?: string } })?.data?.message ??
         'Unable to save warehouse';
       setFormError(message);
-      Alert.alert('Save failed', message);
+      showErrorModal('Save failed', message);
     }
   });
 
   const onDelete = () => {
     if (!warehouseId) return;
-    Alert.alert(
-      'Delete warehouse',
-      'This will soft-delete the warehouse. Continue?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteWarehouse(warehouseId).unwrap();
-              router.back();
-            } catch (error) {
-              const message =
-                (error as { data?: { message?: string } })?.data?.message ??
-                'Unable to delete warehouse';
-              Alert.alert('Delete failed', message);
-            }
-          },
-        },
-      ],
-    );
+    showConfirmModal({
+      title: 'Delete warehouse',
+      message: 'This will soft-delete the warehouse. Continue?',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteWarehouse(warehouseId).unwrap();
+          router.back();
+        } catch (error) {
+          const message =
+            (error as { data?: { message?: string } })?.data?.message ??
+            'Unable to delete warehouse';
+          showErrorModal('Delete failed', message);
+        }
+      },
+    });
   };
 
   if (isEdit && isLoading) {

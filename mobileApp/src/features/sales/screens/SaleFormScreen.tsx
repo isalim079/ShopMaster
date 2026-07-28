@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -31,6 +30,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 
 type SaleFormScreenProps = {
@@ -138,7 +138,7 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
         router.replace(`/(app)/sales/${created.id}`);
       }
     } catch (error) {
-      Alert.alert('Save failed', getErrorMessage(error));
+      showErrorModal('Save failed', getErrorMessage(error));
     }
   });
 

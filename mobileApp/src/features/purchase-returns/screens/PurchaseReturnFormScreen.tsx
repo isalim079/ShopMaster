@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -22,6 +21,7 @@ import {
 } from '@/src/features/purchases/api/purchasesApi';
 import { AppText, Button, IdPicker, TextField } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 
 function numOpt(value: unknown) {
@@ -79,7 +79,7 @@ export function PurchaseReturnFormScreen() {
       }).unwrap();
       router.replace(`/(app)/purchase-returns/${created.id}`);
     } catch (error) {
-      Alert.alert('Create failed', getErrorMessage(error));
+      showErrorModal('Create failed', getErrorMessage(error));
     }
   });
 

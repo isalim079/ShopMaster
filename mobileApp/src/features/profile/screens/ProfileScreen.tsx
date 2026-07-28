@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,6 +25,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showSuccessModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/utils/format';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 
@@ -143,7 +143,7 @@ export function ProfileScreen() {
           }),
         );
       }
-      Alert.alert('Saved', 'Profile updated.');
+      showSuccessModal('Saved', 'Profile updated.');
     } catch (err) {
       setFormError(getErrorMessage(err));
     }
@@ -165,7 +165,7 @@ export function ProfileScreen() {
           }),
         );
       }
-      Alert.alert('Saved', 'Organization updated.');
+      showSuccessModal('Saved', 'Organization updated.');
     } catch (err) {
       setFormError(getErrorMessage(err));
     }

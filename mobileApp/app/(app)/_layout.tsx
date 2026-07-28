@@ -1,5 +1,6 @@
 import { Redirect, Stack } from 'expo-router';
 
+import { appRootStackScreenOptions } from '@/src/navigation/stackOptions';
 import { useAppSelector } from '@/src/store/hooks';
 
 export default function AppLayout() {
@@ -10,15 +11,7 @@ export default function AppLayout() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        headerStyle: { backgroundColor: '#FFFFFF' },
-        headerTitleStyle: { fontWeight: '600', color: '#0F172A' },
-        headerTintColor: '#059669',
-        contentStyle: { backgroundColor: '#F8FAFC' },
-      }}
-    >
+    <Stack screenOptions={appRootStackScreenOptions}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="products" options={{ headerShown: false }} />
       <Stack.Screen name="inventory" options={{ headerShown: false }} />

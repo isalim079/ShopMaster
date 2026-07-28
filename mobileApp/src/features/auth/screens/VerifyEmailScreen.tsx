@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Alert, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 import {
   useResendVerificationMutation,
@@ -13,7 +14,17 @@ import {
   type VerifyEmailFormValues,
 } from '@/src/features/auth/schemas/authSchemas';
 import { getErrorMessage } from '@/src/shared/lib/errors';
-import { Button, TextField, AppText } from '@/src/shared/components/ui';
+import {
+  showErrorModal,
+  showSuccessModal,
+} from '@/src/shared/utils/modal';
+import {
+  Button,
+  TextField,
+  AppText,
+  KeyboardAwareScrollScreen,
+} from '@/src/shared/components/ui';
+import { colors } from '@/src/theme/tokens';
 
 export function VerifyEmailScreen() {
   const params = useLocalSearchParams<{ email?: string }>();
@@ -33,82 +44,123 @@ export function VerifyEmailScreen() {
     setFormError(null);
     try {
       const result = await verifyEmail(values).unwrap();
-      Alert.alert('Verified', result.message, [
-        { text: 'Sign in', onPress: () => router.replace('/(auth)/login') },
+      showSuccessModal('Email verified', result.message, [
+        { text: 'Sign in', onPress: () => router.replace('/login') },
       ]);
     } catch (error) {
-      setFormError(getErrorMessage(error, 'Verification failed.'));
+      const message = getErrorMessage(error, 'Verification failed.');
+      setFormError(message);
+      showErrorModal('Verification failed', message);
     }
   });
 
   const onResend = async () => {
     const email = getValues('email');
     if (!email) {
-      setFormError('Email is required to resend OTP');
+      const message = 'Email is required to resend OTP';
+      setFormError(message);
+      showErrorModal('Email required', message);
       return;
     }
+    setFormError(null);
     try {
       const result = await resend({ email }).unwrap();
-      Alert.alert('OTP sent', result.message);
+      showSuccessModal('OTP sent', result.message);
     } catch (error) {
-      setFormError(getErrorMessage(error, 'Could not resend OTP.'));
+      const message = getErrorMessage(error, 'Could not resend OTP.');
+      setFormError(message);
+      showErrorModal('Resend failed', message);
     }
   };
 
   return (
-    <View className="flex-1 justify-center gap-4 bg-background px-4 dark:bg-background-dark">
-      <View className="mb-4 gap-2">
-        <AppText variant="headline">Verify email</AppText>
-        <AppText variant="caption">
-          Enter the 6-digit code sent to your email
-        </AppText>
+    <KeyboardAwareScrollScreen centerContent>
+      {/* Screen header */}
+      <View className="mb-6 items-center gap-3">
+        <View className="h-14 w-14 items-center justify-center rounded-full bg-primary-container">
+          <MaterialCommunityIcons
+            name="email-check-outline"
+            size={28}
+            color={colors.brand.primary}
+          />
+        </View>
+        <View className="items-center gap-1">
+          <AppText variant="headline" className="text-center">
+            Verify email
+          </AppText>
+          <AppText variant="caption" className="text-center">
+            Enter the 6-digit code sent to your email
+          </AppText>
+        </View>
       </View>
 
-      <Controller
-        control={control}
-        name="email"
-        render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-          <TextField
-            label="Email"
-            autoCapitalize="none"
-            keyboardType="email-address"
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={error?.message}
-          />
-        )}
-      />
+      {/* OTP form */}
+      <View className="gap-4 rounded-lg border border-border bg-surface p-5 dark:border-border-dark dark:bg-surface-dark">
+        <Controller
+          control={control}
+          name="email"
+          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+            <TextField
+              label="Email"
+              leftIcon="email-outline"
+              autoCapitalize="none"
+              keyboardType="email-address"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={error?.message}
+            />
+          )}
+        />
 
-      <Controller
-        control={control}
-        name="otp"
-        render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-          <TextField
-            label="OTP"
-            keyboardType="number-pad"
-            maxLength={6}
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={error?.message}
-          />
-        )}
-      />
+        <Controller
+          control={control}
+          name="otp"
+          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
+            <TextField
+              label="OTP"
+              leftIcon="shield-key-outline"
+              keyboardType="number-pad"
+              maxLength={6}
+              autoComplete="one-time-code"
+              textContentType="oneTimeCode"
+              returnKeyType="done"
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={error?.message}
+              placeholder="6-digit code"
+              onSubmitEditing={onSubmit}
+            />
+          )}
+        />
 
-      {formError ? (
-        <AppText className="text-danger" variant="caption">
-          {formError}
-        </AppText>
-      ) : null}
+        {/* Form error message */}
+        {formError ? (
+          <View className="flex-row items-start gap-2 rounded-md bg-danger/10 px-3 py-2.5">
+            <MaterialCommunityIcons
+              name="alert-circle-outline"
+              size={18}
+              color={colors.brand.danger}
+            />
+            <AppText className="flex-1 text-danger" variant="caption">
+              {formError}
+            </AppText>
+          </View>
+        ) : null}
 
-      <Button label="Verify" onPress={onSubmit} loading={isLoading} />
-      <Button
-        label="Resend code"
-        variant="outline"
-        onPress={onResend}
-        loading={isResending}
-      />
-    </View>
+        {/* Primary action button */}
+        <Button label="Verify" onPress={onSubmit} loading={isLoading} size="lg" />
+
+        {/* Secondary action button */}
+        <Button
+          label="Resend code"
+          variant="outline"
+          icon="email-fast-outline"
+          onPress={onResend}
+          loading={isResending}
+        />
+      </View>
+    </KeyboardAwareScrollScreen>
   );
 }

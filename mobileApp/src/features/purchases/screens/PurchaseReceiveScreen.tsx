@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,6 +25,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 
 export function PurchaseReceiveScreen({ purchaseId }: { purchaseId: string }) {
   const { data, isLoading } = useGetPurchaseByIdQuery(purchaseId);
@@ -70,7 +70,7 @@ export function PurchaseReceiveScreen({ purchaseId }: { purchaseId: string }) {
       }).unwrap();
       router.replace(`/(app)/purchases/${purchaseId}`);
     } catch (error) {
-      Alert.alert('Receive failed', getErrorMessage(error));
+      showErrorModal('Receive failed', getErrorMessage(error));
     }
   });
 

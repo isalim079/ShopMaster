@@ -1,13 +1,16 @@
 import morgan from 'morgan';
+import { env } from '../config/env';
 import { logger } from './logger';
 
-const stream = {
-  write: (message: string) => {
-    logger.info(message.trim());
-  },
-};
+const productionFormat = ':method :url :status :response-time ms';
 
-export const morganMiddleware = morgan(
-  ':method :url :status :response-time ms',
-  { stream }
-);
+export const morganMiddleware =
+  env.NODE_ENV === 'development'
+    ? morgan('dev')
+    : morgan(productionFormat, {
+        stream: {
+          write: (message: string) => {
+            logger.info(message.trim());
+          },
+        },
+      });

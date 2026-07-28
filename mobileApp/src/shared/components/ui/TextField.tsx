@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
+import { useFormKeyboardScroll } from '@/src/shared/components/ui/KeyboardAwareScrollScreen';
+import { scrollFocusedInputIntoView } from '@/src/shared/lib/scrollInputIntoView';
 import { cn } from '@/src/theme/cn';
 import { colors } from '@/src/theme/tokens';
 
@@ -39,6 +41,7 @@ export function TextField({
   editable = true,
   ...props
 }: TextFieldProps) {
+  const formScroll = useFormKeyboardScroll();
   const [focused, setFocused] = useState(false);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
@@ -88,6 +91,12 @@ export function TextField({
           onFocus={(e) => {
             setFocused(true);
             onFocus?.(e);
+            if (formScroll) {
+              scrollFocusedInputIntoView(e, formScroll.scrollRef, {
+                scrollY: formScroll.scrollY.current,
+                keyboardHeight: formScroll.keyboardHeight,
+              });
+            }
           }}
           onBlur={(e) => {
             setFocused(false);

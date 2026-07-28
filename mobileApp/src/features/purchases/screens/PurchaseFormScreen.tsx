@@ -1,5 +1,4 @@
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -26,6 +25,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 
 function numOpt(v: unknown) {
@@ -83,7 +83,7 @@ export function PurchaseFormScreen() {
       }).unwrap();
       router.replace(`/(app)/purchases/${created.id}`);
     } catch (error) {
-      Alert.alert('Create failed', getErrorMessage(error));
+      showErrorModal('Create failed', getErrorMessage(error));
     }
   });
 

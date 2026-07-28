@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 
 import {
   useGetMySettingsQuery,
@@ -15,6 +15,7 @@ import {
   LoadingState,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import {
   setPreference,
@@ -72,7 +73,7 @@ export function SettingsScreen() {
     } catch (err) {
       setLocalTheme(previous);
       dispatch(setPreference(previous));
-      Alert.alert('Error', getErrorMessage(err, 'Could not update theme'));
+      showErrorModal('Error', getErrorMessage(err, 'Could not update theme'));
     }
   };
 

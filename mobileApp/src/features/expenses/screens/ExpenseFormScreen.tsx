@@ -1,6 +1,5 @@
 import { useEffect, useMemo } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -29,6 +28,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 import { PAYMENT_METHODS } from '@/src/shared/types/enums';
 
@@ -110,7 +110,7 @@ export function ExpenseFormScreen({ expenseId }: ExpenseFormScreenProps) {
       }
       router.back();
     } catch (error) {
-      Alert.alert('Save failed', getErrorMessage(error));
+      showErrorModal('Save failed', getErrorMessage(error));
     }
   });
 

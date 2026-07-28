@@ -1,4 +1,4 @@
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 
 import {
@@ -13,6 +13,7 @@ import {
   LoadingState,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { formatMoney } from '@/src/shared/lib/format';
 
 type ProductDetailScreenProps = {
@@ -25,21 +26,20 @@ export function ProductDetailScreen({ productId }: ProductDetailScreenProps) {
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();
 
   const onDelete = () => {
-    Alert.alert('Delete product', 'Mark this product inactive/delete?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteProduct(productId).unwrap();
-            router.back();
-          } catch (err) {
-            Alert.alert('Delete failed', getErrorMessage(err));
-          }
-        },
+    showConfirmModal({
+      title: 'Delete product',
+      message: 'Mark this product inactive/delete?',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteProduct(productId).unwrap();
+          router.back();
+        } catch (err) {
+          showErrorModal('Delete failed', getErrorMessage(err));
+        }
       },
-    ]);
+    });
   };
 
   if (isLoading) return <LoadingState message="Loading product…" />;

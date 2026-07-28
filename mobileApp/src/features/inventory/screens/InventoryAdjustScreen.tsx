@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -25,6 +24,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal, showSuccessModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 
 export function InventoryAdjustScreen() {
@@ -64,10 +64,10 @@ export function InventoryAdjustScreen() {
         quantity: Number(values.quantity),
         note: emptyToUndefined(values.note),
       }).unwrap();
-      Alert.alert('Adjusted', 'Stock adjustment saved.');
+      showSuccessModal('Adjusted', 'Stock adjustment saved.');
       router.back();
     } catch (error) {
-      Alert.alert('Adjustment failed', getErrorMessage(error));
+      showErrorModal('Adjustment failed', getErrorMessage(error));
     }
   });
 

@@ -1,19 +1,41 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { Platform, View, type ScrollViewProps } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
-  KeyboardAwareScrollView,
-  KeyboardEvents,
-} from 'react-native-keyboard-controller';
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type RefObject,
+} from 'react';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  type ScrollViewProps,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { cn } from '@/src/theme/cn';
+
+type FormKeyboardScrollContextValue = {
+  scrollRef: RefObject<ScrollView | null>;
+  scrollY: RefObject<number>;
+  keyboardHeight: number;
+};
+
+const FormKeyboardScrollContext =
+  createContext<FormKeyboardScrollContextValue | null>(null);
+
+export function useFormKeyboardScroll() {
+  return useContext(FormKeyboardScrollContext);
+}
 
 type KeyboardAwareScrollScreenProps = {
   children: ReactNode;
   className?: string;
   contentContainerClassName?: string;
-  /** Space between focused input and keyboard top. */
-  bottomOffset?: number;
   /** Center short screens only (login). Never use on long forms. */
   centerContent?: boolean;
   scrollViewProps?: Omit<
@@ -22,65 +44,96 @@ type KeyboardAwareScrollScreenProps = {
   >;
 };
 
-/**
- * Production keyboard shell powered by `react-native-keyboard-controller`
- * (Expo-recommended). Auto-scrolls focused fields above keyboard on iOS + Android.
- */
 export function KeyboardAwareScrollScreen({
   children,
   className,
   contentContainerClassName,
-  bottomOffset = 24,
   centerContent = false,
   scrollViewProps,
 }: KeyboardAwareScrollScreenProps) {
   const insets = useSafeAreaInsets();
-  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollY = useRef(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
-    const show = KeyboardEvents.addListener('keyboardWillShow', () => {
-      setKeyboardOpen(true);
+    const showEvent =
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent =
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (event) => {
+      setKeyboardHeight(event.endCoordinates.height);
     });
-    const hide = KeyboardEvents.addListener('keyboardWillHide', () => {
-      setKeyboardOpen(false);
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      setKeyboardHeight(0);
     });
+
     return () => {
-      show.remove();
-      hide.remove();
+      showSub.remove();
+      hideSub.remove();
     };
   }, []);
 
+  const keyboardOpen = keyboardHeight > 0;
   const useCentering = centerContent && !keyboardOpen;
   const topPad = Math.max(insets.top, 16);
-  const bottomPad = Math.max(insets.bottom, 16) + (keyboardOpen ? 16 : 28);
+  const bottomPad =
+    Math.max(insets.bottom, 16) +
+    (keyboardOpen
+      ? Platform.OS === 'android'
+        ? keyboardHeight + 32
+        : 32
+      : 28);
+
+  const scrollContextValue: FormKeyboardScrollContextValue = {
+    scrollRef,
+    scrollY,
+    keyboardHeight,
+  };
+
+  const scrollView = (
+    <ScrollView
+      ref={scrollRef}
+      style={{ flex: 1 }}
+      keyboardShouldPersistTaps="handled"
+      keyboardDismissMode="none"
+      showsVerticalScrollIndicator={false}
+      nestedScrollEnabled
+      decelerationRate="normal"
+      overScrollMode="always"
+      onScroll={(event) => {
+        scrollY.current = event.nativeEvent.contentOffset.y;
+        scrollViewProps?.onScroll?.(event);
+      }}
+      scrollEventThrottle={16}
+      contentContainerClassName={cn('px-5', contentContainerClassName)}
+      contentContainerStyle={{
+        flexGrow: useCentering ? 1 : undefined,
+        justifyContent: useCentering ? 'center' : undefined,
+        paddingTop: topPad,
+        paddingBottom: bottomPad,
+      }}
+      {...scrollViewProps}
+    >
+      {children}
+    </ScrollView>
+  );
 
   return (
-    <View
-      className={cn('flex-1 bg-background dark:bg-background-dark', className)}
-      style={{ flex: 1 }}
-    >
-      <KeyboardAwareScrollView
+    <FormKeyboardScrollContext.Provider value={scrollContextValue}>
+      <View
         style={{ flex: 1 }}
-        bottomOffset={bottomOffset}
-        keyboardShouldPersistTaps="handled"
-        keyboardDismissMode={Platform.OS === 'ios' ? 'interactive' : 'on-drag'}
-        showsVerticalScrollIndicator
-        bounces={false}
-        overScrollMode="never"
-        nestedScrollEnabled
-        contentContainerClassName={cn('px-5', contentContainerClassName)}
-        contentContainerStyle={{
-          // Long forms: size to children so scroll works.
-          // Short screens: grow + center only when keyboard closed.
-          flexGrow: useCentering ? 1 : undefined,
-          justifyContent: useCentering ? 'center' : undefined,
-          paddingTop: topPad,
-          paddingBottom: bottomPad,
-        }}
-        {...scrollViewProps}
+        className={cn('bg-background dark:bg-background-dark', className)}
       >
-        {children}
-      </KeyboardAwareScrollView>
-    </View>
+        {Platform.OS === 'ios' ? (
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+            {scrollView}
+          </KeyboardAvoidingView>
+        ) : (
+          scrollView
+        )}
+      </View>
+    </FormKeyboardScrollContext.Provider>
   );
 }

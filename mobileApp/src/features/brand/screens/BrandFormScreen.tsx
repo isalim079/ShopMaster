@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -28,6 +27,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { emptyToUndefined } from '@/src/shared/utils/format';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { cn } from '@/src/theme/cn';
 
 type Props = {
@@ -86,30 +86,29 @@ export function BrandFormScreen({ brandId }: Props) {
         (error as { data?: { message?: string } })?.data?.message ??
         'Unable to save brand';
       setFormError(message);
-      Alert.alert('Save failed', message);
+      showErrorModal('Save failed', message);
     }
   });
 
   const onDelete = () => {
     if (!brandId) return;
-    Alert.alert('Delete brand', 'This will soft-delete the brand. Continue?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await deleteBrand(brandId).unwrap();
-            router.back();
-          } catch (error) {
-            const message =
-              (error as { data?: { message?: string } })?.data?.message ??
-              'Unable to delete brand';
-            Alert.alert('Delete failed', message);
-          }
-        },
+    showConfirmModal({
+      title: 'Delete brand',
+      message: 'This will soft-delete the brand. Continue?',
+      confirmText: 'Delete',
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await deleteBrand(brandId).unwrap();
+          router.back();
+        } catch (error) {
+          const message =
+            (error as { data?: { message?: string } })?.data?.message ??
+            'Unable to delete brand';
+          showErrorModal('Delete failed', message);
+        }
       },
-    ]);
+    });
   };
 
   if (isEdit && isLoading) {

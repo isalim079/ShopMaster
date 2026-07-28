@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +17,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showSuccessModal } from '@/src/shared/utils/modal';
 import { colors } from '@/src/theme/tokens';
 
 export function ResetPasswordScreen() {
@@ -48,7 +49,7 @@ export function ResetPasswordScreen() {
         password: values.password,
       }).unwrap();
 
-      Alert.alert('Password updated', result.message, [
+      showSuccessModal('Password updated', result.message, [
         {
           text: 'Sign in',
           onPress: () => router.replace('/login'),

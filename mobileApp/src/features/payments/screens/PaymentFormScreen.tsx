@@ -1,5 +1,4 @@
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -21,6 +20,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 import { PAYMENT_DIRECTIONS, PAYMENT_METHODS } from '@/src/shared/types/enums';
 
@@ -63,7 +63,7 @@ export function PaymentFormScreen() {
       }).unwrap();
       router.back();
     } catch (error) {
-      Alert.alert('Create failed', getErrorMessage(error));
+      showErrorModal('Create failed', getErrorMessage(error));
     }
   });
 

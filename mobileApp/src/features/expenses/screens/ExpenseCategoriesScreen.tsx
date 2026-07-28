@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { FlashList } from '@shopify/flash-list';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,6 +24,7 @@ import {
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
 
 export function ExpenseCategoriesScreen() {
@@ -50,7 +51,7 @@ export function ExpenseCategoriesScreen() {
       setPage(1);
       refetch();
     } catch (err) {
-      Alert.alert('Create failed', getErrorMessage(err));
+      showErrorModal('Create failed', getErrorMessage(err));
     }
   });
 
@@ -130,20 +131,19 @@ export function ExpenseCategoriesScreen() {
           <CategoryRow
             category={item}
             onDelete={() => {
-              Alert.alert('Delete category?', item.name, [
-                { text: 'Cancel', style: 'cancel' },
-                {
-                  text: 'Delete',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      await deleteCategory(item.id).unwrap();
-                    } catch (err) {
-                      Alert.alert('Delete failed', getErrorMessage(err));
-                    }
-                  },
+              showConfirmModal({
+                title: 'Delete category?',
+                message: item.name,
+                confirmText: 'Delete',
+                destructive: true,
+                onConfirm: async () => {
+                  try {
+                    await deleteCategory(item.id).unwrap();
+                  } catch (err) {
+                    showErrorModal('Delete failed', getErrorMessage(err));
+                  }
                 },
-              ]);
+              });
             }}
           />
         )}

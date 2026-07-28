@@ -1,4 +1,4 @@
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { router } from 'expo-router';
 
 import {
@@ -13,6 +13,7 @@ import {
   LoadingState,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
+import { showConfirmModal, showErrorModal } from '@/src/shared/utils/modal';
 import { formatDate, formatMoney } from '@/src/shared/lib/format';
 
 export function PurchaseDetailScreen({ purchaseId }: { purchaseId: string }) {
@@ -74,21 +75,21 @@ export function PurchaseDetailScreen({ purchaseId }: { purchaseId: string }) {
             variant="danger"
             loading={cancelling}
             onPress={() => {
-              Alert.alert('Cancel purchase?', 'This cannot be undone.', [
-                { text: 'Keep', style: 'cancel' },
-                {
-                  text: 'Cancel',
-                  style: 'destructive',
-                  onPress: async () => {
-                    try {
-                      await cancelPurchase(purchaseId).unwrap();
-                      refetch();
-                    } catch (err) {
-                      Alert.alert('Failed', getErrorMessage(err));
-                    }
-                  },
+              showConfirmModal({
+                title: 'Cancel purchase?',
+                message: 'This cannot be undone.',
+                confirmText: 'Cancel',
+                cancelText: 'Keep',
+                destructive: true,
+                onConfirm: async () => {
+                  try {
+                    await cancelPurchase(purchaseId).unwrap();
+                    refetch();
+                  } catch (err) {
+                    showErrorModal('Failed', getErrorMessage(err));
+                  }
                 },
-              ]);
+              });
             }}
           />
         ) : null}

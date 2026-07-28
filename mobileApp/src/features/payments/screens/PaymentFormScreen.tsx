@@ -1,8 +1,3 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +12,8 @@ import {
   AppText,
   Button,
   ChipSelect,
+  DateField,
+  KeyboardAwareScrollScreen,
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
@@ -68,14 +65,7 @@ export function PaymentFormScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">New payment</AppText>
 
         <Controller
@@ -125,12 +115,11 @@ export function PaymentFormScreen() {
         <Controller
           control={control}
           name="paymentDate"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <TextField
-              label="Date (YYYY-MM-DD)"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <DateField
+              label="Payment date"
               value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
+              onChange={onChange}
               error={error?.message}
             />
           )}
@@ -220,7 +209,6 @@ export function PaymentFormScreen() {
         />
 
         <Button label="Create payment" onPress={onSubmit} loading={isLoading} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

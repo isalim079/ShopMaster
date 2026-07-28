@@ -1,10 +1,12 @@
 import { Stack } from 'expo-router';
 
 import { moduleStackScreenOptions } from '@/src/navigation/stackOptions';
+import { useResolvedTheme } from '@/src/theme/useResolvedTheme';
 
 export default function ProfileLayout() {
+  const { isDark } = useResolvedTheme();
   return (
-    <Stack screenOptions={moduleStackScreenOptions}>
+    <Stack screenOptions={moduleStackScreenOptions(isDark)}>
       <Stack.Screen name="index" options={{ title: 'Profile' }} />
     </Stack>
   );

@@ -1,10 +1,5 @@
 import { useEffect } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,7 +14,7 @@ import {
   useGetPurchaseByIdQuery,
   useGetPurchasesQuery,
 } from '@/src/features/purchases/api/purchasesApi';
-import { AppText, Button, IdPicker, TextField } from '@/src/shared/components/ui';
+import { AppText, Button, DateField, IdPicker, KeyboardAwareScrollScreen, TextField } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
 import { showErrorModal } from '@/src/shared/utils/modal';
 import { emptyToUndefined } from '@/src/shared/lib/format';
@@ -84,14 +79,7 @@ export function PurchaseReturnFormScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">New purchase return</AppText>
 
         <Controller
@@ -114,12 +102,11 @@ export function PurchaseReturnFormScreen() {
         <Controller
           control={control}
           name="returnDate"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <TextField
-              label="Return date (YYYY-MM-DD)"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <DateField
+              label="Return date"
               value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
+              onChange={onChange}
               error={error?.message}
             />
           )}
@@ -199,7 +186,6 @@ export function PurchaseReturnFormScreen() {
         ))}
 
         <Button label="Create return" onPress={onSubmit} loading={isLoading} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
-  ScrollView,
   View,
 } from 'react-native';
 import { router } from 'expo-router';
@@ -23,6 +20,7 @@ import {
 import {
   AppText,
   Button,
+  KeyboardAwareScrollScreen,
   LoadingState,
   TextField,
 } from '@/src/shared/components/ui';
@@ -116,14 +114,7 @@ export function BrandFormScreen({ brandId }: Props) {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <Controller
           control={control}
           name="name"
@@ -207,7 +198,6 @@ export function BrandFormScreen({ brandId }: Props) {
             disabled={saving}
           />
         ) : null}
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

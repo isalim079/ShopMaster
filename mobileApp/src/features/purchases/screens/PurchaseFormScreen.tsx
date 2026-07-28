@@ -1,9 +1,4 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useForm, type Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,7 +16,9 @@ import {
   AppText,
   Button,
   ChipSelect,
+  DateField,
   IdPicker,
+  KeyboardAwareScrollScreen,
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
@@ -39,7 +36,7 @@ export function PurchaseFormScreen() {
   const { data: warehouses } = useGetWarehousesQuery({ page: 1, limit: 50 });
   const [createPurchase, { isLoading }] = useCreatePurchaseMutation();
 
-  const { control, handleSubmit } = useForm<
+  const { control, handleSubmit, setValue } = useForm<
     PurchaseFormInput,
     unknown,
     PurchaseFormValues
@@ -88,11 +85,7 @@ export function PurchaseFormScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerClassName="gap-4 px-4 py-6" keyboardShouldPersistTaps="handled">
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">New purchase</AppText>
 
         <Controller
@@ -124,14 +117,12 @@ export function PurchaseFormScreen() {
         <Controller
           control={control}
           name="orderDate"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <TextField
-              label="Order date (YYYY-MM-DD)"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <DateField
+              label="Order date"
               value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
+              onChange={onChange}
               error={error?.message}
-              placeholder="2026-07-21"
             />
           )}
         />
@@ -184,10 +175,10 @@ export function PurchaseFormScreen() {
           name="items"
           priceLabel="Unit cost"
           priceField="unitCost"
+          setValue={setValue}
         />
 
         <Button label="Create purchase" onPress={onSubmit} loading={isLoading} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

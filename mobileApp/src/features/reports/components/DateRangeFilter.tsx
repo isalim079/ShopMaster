@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 
-import { Button, TextField } from '@/src/shared/components/ui';
+import { Button, DateField } from '@/src/shared/components/ui';
 
 type DateRangeFilterProps = {
   from: string;
@@ -23,24 +23,10 @@ export function DateRangeFilter({
     <View className="gap-3">
       <View className="flex-row gap-3">
         <View className="flex-1">
-          <TextField
-            label="From"
-            value={from}
-            onChangeText={onChangeFrom}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <DateField label="From" value={from} onChange={onChangeFrom} />
         </View>
         <View className="flex-1">
-          <TextField
-            label="To"
-            value={to}
-            onChangeText={onChangeTo}
-            placeholder="YYYY-MM-DD"
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <DateField label="To" value={to} onChange={onChangeTo} />
         </View>
       </View>
       <Button

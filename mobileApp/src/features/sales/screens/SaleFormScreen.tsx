@@ -1,9 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useForm, type Control } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +20,9 @@ import {
   AppText,
   Button,
   ChipSelect,
+  DateField,
   IdPicker,
+  KeyboardAwareScrollScreen,
   LoadingState,
   TextField,
 } from '@/src/shared/components/ui';
@@ -74,7 +71,7 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
     [],
   );
 
-  const { control, handleSubmit, reset } = useForm<
+  const { control, handleSubmit, reset, setValue } = useForm<
     SaleFormInput,
     unknown,
     SaleFormValues
@@ -147,14 +144,7 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">{isEdit ? 'Edit sale' : 'New sale'}</AppText>
 
         <Controller
@@ -193,12 +183,11 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
         <Controller
           control={control}
           name="saleDate"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <TextField
-              label="Sale date (YYYY-MM-DD)"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <DateField
+              label="Sale date"
               value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
+              onChange={onChange}
               error={error?.message}
             />
           )}
@@ -254,6 +243,7 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
           name="items"
           priceLabel="Unit price"
           priceField="unitPrice"
+          setValue={setValue}
         />
 
         <Button
@@ -261,7 +251,6 @@ export function SaleFormScreen({ saleId }: SaleFormScreenProps) {
           onPress={onSubmit}
           loading={creating || updating}
         />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

@@ -1,9 +1,4 @@
 import { useEffect, useMemo } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,7 +18,9 @@ import {
   AppText,
   Button,
   ChipSelect,
+  DateField,
   IdPicker,
+  KeyboardAwareScrollScreen,
   LoadingState,
   TextField,
 } from '@/src/shared/components/ui';
@@ -119,14 +116,7 @@ export function ExpenseFormScreen({ expenseId }: ExpenseFormScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">
           {isEdit ? 'Edit expense' : 'New expense'}
         </AppText>
@@ -178,12 +168,11 @@ export function ExpenseFormScreen({ expenseId }: ExpenseFormScreenProps) {
         <Controller
           control={control}
           name="expenseDate"
-          render={({ field: { onChange, onBlur, value }, fieldState: { error } }) => (
-            <TextField
-              label="Date (YYYY-MM-DD)"
+          render={({ field: { onChange, value }, fieldState: { error } }) => (
+            <DateField
+              label="Expense date"
               value={value ?? ''}
-              onChangeText={onChange}
-              onBlur={onBlur}
+              onChange={onChange}
               error={error?.message}
             />
           )}
@@ -236,7 +225,6 @@ export function ExpenseFormScreen({ expenseId }: ExpenseFormScreenProps) {
           onPress={onSubmit}
           loading={creating || updating}
         />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

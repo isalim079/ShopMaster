@@ -1,10 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,6 +23,7 @@ import {
   Button,
   ChipSelect,
   IdPicker,
+  KeyboardAwareScrollScreen,
   LoadingState,
   TextField,
 } from '@/src/shared/components/ui';
@@ -148,14 +144,7 @@ export function ProductFormScreen({ productId }: ProductFormScreenProps) {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">{isEdit ? 'Edit product' : 'New product'}</AppText>
 
         <Controller
@@ -378,7 +367,6 @@ export function ProductFormScreen({ productId }: ProductFormScreenProps) {
           onPress={onSubmit}
           loading={creating || updating}
         />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

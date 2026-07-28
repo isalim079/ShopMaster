@@ -125,10 +125,13 @@ const buildWhere = (
   }
 
   if (filters.search) {
+    const search = filters.search.trim();
     where.OR = [
-      { name: { contains: filters.search, mode: 'insensitive' } },
-      { sku: { contains: filters.search, mode: 'insensitive' } },
-      { barcode: { contains: filters.search, mode: 'insensitive' } },
+      { name: { contains: search, mode: 'insensitive' } },
+      { sku: { contains: search, mode: 'insensitive' } },
+      { barcode: { contains: search, mode: 'insensitive' } },
+      { id: { equals: search } },
+      { id: { contains: search, mode: 'insensitive' } },
     ];
   }
 

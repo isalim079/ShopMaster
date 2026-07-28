@@ -1,10 +1,5 @@
 import { useEffect } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 import { router } from 'expo-router';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +16,7 @@ import {
 import {
   AppText,
   Button,
+  KeyboardAwareScrollScreen,
   LoadingState,
   TextField,
 } from '@/src/shared/components/ui';
@@ -77,11 +73,7 @@ export function PurchaseReceiveScreen({ purchaseId }: { purchaseId: string }) {
   if (isLoading || !data) return <LoadingState message="Loading purchase…" />;
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView contentContainerClassName="gap-4 px-4 py-6" keyboardShouldPersistTaps="handled">
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <AppText variant="title">Receive {data.number}</AppText>
         {fields.length === 0 ? (
           <AppText variant="caption">Nothing left to receive.</AppText>
@@ -113,7 +105,6 @@ export function PurchaseReceiveScreen({ purchaseId }: { purchaseId: string }) {
           loading={saving}
           disabled={fields.length === 0}
         />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }

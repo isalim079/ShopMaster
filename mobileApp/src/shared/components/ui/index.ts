@@ -10,6 +10,10 @@ export { KeyboardAwareScrollScreen } from './KeyboardAwareScrollScreen';
 export { PhoneField, toE164 } from './PhoneField';
 export { ToastProvider, useToast } from './Toast';
 export { AppModalProvider, useAppModal } from './AppModal';
+export { DateField } from './DateField';
+export { SearchableSelect } from './SearchableSelect';
+export { ProductSelect } from './ProductSelect';
+export type { SearchableOption } from './SearchableSelect';
 export {
   showAppModal,
   showConfirmModal,

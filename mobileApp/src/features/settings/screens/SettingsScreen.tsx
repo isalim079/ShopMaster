@@ -41,12 +41,14 @@ export function SettingsScreen() {
   );
 
   useEffect(() => {
-    if (data?.theme) {
-      const mapped = serverToLocal(data.theme);
-      setLocalTheme(mapped);
+    if (!data?.theme) return;
+    const mapped = serverToLocal(data.theme);
+    setLocalTheme(mapped);
+    // Keep Redux + device chrome in sync with account setting
+    if (preference !== mapped) {
       dispatch(setPreference(mapped));
     }
-  }, [data, dispatch]);
+  }, [data, dispatch, preference]);
 
   if (isLoading && !data) {
     return <LoadingState message="Loading settings…" />;
@@ -66,6 +68,7 @@ export function SettingsScreen() {
   const onSelectTheme = async (next: ThemePreference) => {
     if (next === 'system') return;
     const previous = localTheme;
+    // Apply instantly for UI / headers / tab bar
     setLocalTheme(next);
     dispatch(setPreference(next));
     try {

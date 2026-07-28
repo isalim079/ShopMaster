@@ -1,10 +1,5 @@
 import { useMemo } from 'react';
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-} from 'react-native';
+import { View } from 'react-native';
 import { router, useLocalSearchParams } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,6 +16,7 @@ import {
   AppText,
   Button,
   IdPicker,
+  KeyboardAwareScrollScreen,
   TextField,
 } from '@/src/shared/components/ui';
 import { getErrorMessage } from '@/src/shared/lib/errors';
@@ -72,14 +68,7 @@ export function InventoryAdjustScreen() {
   });
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-background dark:bg-background-dark"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-    >
-      <ScrollView
-        contentContainerClassName="gap-4 px-4 py-6"
-        keyboardShouldPersistTaps="handled"
-      >
+    <KeyboardAwareScrollScreen contentContainerClassName="gap-4">
         <View className="gap-1">
           <AppText variant="title">Stock adjustment</AppText>
           <AppText variant="caption">
@@ -149,7 +138,6 @@ export function InventoryAdjustScreen() {
         />
 
         <Button label="Save adjustment" onPress={onSubmit} loading={isLoading} />
-      </ScrollView>
-    </KeyboardAvoidingView>
+    </KeyboardAwareScrollScreen>
   );
 }
